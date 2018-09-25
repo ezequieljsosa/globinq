@@ -1,0 +1,29 @@
+{
+    'name': 'Pn-trHbO',
+    'uniprot': 'A6GC12_9DELT',
+    'organism': 'Penumaris numerculis',
+    'group': 'O',
+    'pdbs': ["1xx2"],
+    'sequence': "MSKNKSPLLNESEKMMSEMLPMKVSQSKLNYEEKVYIPTTIRNRKQHCFRRFFPYIALFQIIMLIILLILYFCFPNLFYSTNFNTNFNTSLLQNNSIETKLNSIPPQNNSQKTEVPIILNYTTQKTEVTEPIIINNTTEEIETQTIMIPKSTDQTQTIISAKTTAIISPPETSETIAQVLKNSDKREHDDEELSFTTEMETITTETETSSTIPHLRSLPIKSESSMETTSEETDEE",
+    "experimental": {
+        'kon': "1",
+        'koff': "8",
+        'p50': '33'
+
+    },
+    "calculated": {
+        'kon': '2',
+        'koff': '2'
+    },
+    'regions': {
+        'AS': { residues: [{ 'res': 'Y', 'name': 'B10' }], 'k': '3' },
+        'E7G': { residues: [{ 'res': 'Y', 'name': 'E7' }], 'opened': 0, 'k': '6.333' },
+        'STG8': { residues: [{ 'res': 'Y', 'name': 'E7' }], 'opened': 100, 'k': '8.2' },
+        'LT': { residues: [{ 'res': 'Y', 'name': 'E7' }], 'opened': 30, 'k': '0.1' }
+    },
+    'positions': {
+        'B10': { 'visible': true, 'pdb_pos': { '1xx2': 'A.55' }, 'seq_pos': 20 },
+        'E7': { 'visible': false, 'pdb_pos': { '1xx2': 'A.200' }, 'seq_pos': 30 }
+    }
+
+}
