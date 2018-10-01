@@ -42,6 +42,11 @@ python GlobinQ/db/abundances.py
 ```bash
   python GlobinQ/db/update_pdb_alignments.py 
 ```
+* Copy generated files to public dir
+  cp data/tree_data.json public/generated
+  cp data/msa.fasta public/generated
+  cp data/abundances* public/generated
+  
 * Load tree
 
 

@@ -17,7 +17,7 @@ import Statistics from './pages/Statistics.jsx';
 import UploadGlobin from './pages/UploadGlobin.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
-
+import {tour_globin} from './tours.js';
 
 import {Cookies, withCookies} from 'react-cookie';
 import {instanceOf} from 'prop-types';
@@ -25,7 +25,7 @@ import {instanceOf} from 'prop-types';
 import {BrowserRouter as Router, Link, Route, withRouter} from 'react-router-dom'
 //https://react-bootstrap.github.io/components.html
 import {Nav, Navbar, NavItem} from 'react-bootstrap';
-import  Tour from 'bootstrap-tour';
+
 
 const Header = ({base, logged, logout}) => (
 
@@ -40,7 +40,7 @@ const Header = ({base, logged, logout}) => (
             <NavItem eventKey={1}><Link to={base + "global"}>Data </Link></NavItem>
             <NavItem eventKey={1}><Link to={base + "statistics"}>Statistics </Link></NavItem>
             {/*<NavItem eventKey={2}><Link to={base + "userguide"}>User Guide</Link></NavItem>*/}
-            <NavItem eventKey={3}><Link to={base + "tutorial"}>Tutorial</Link></NavItem>
+            <NavItem eventKey={3}><Link to={base + "tutorial"}>Interactive Tutorials</Link></NavItem>
             <NavItem eventKey={3}><Link to={base + "downloads"}>Downloads</Link></NavItem>
             {(logged) ?
                 <NavItem eventKey={3}><Link to={base + "upload"}>Upload My Globin</Link></NavItem>
@@ -48,7 +48,7 @@ const Header = ({base, logged, logout}) => (
 
 
             <NavItem eventKey={4}><Link to={base + "about"}>About</Link></NavItem>
-            {logged && <NavItem eventKey={4} onClick={logout} ><Link to={base }>Logout</Link></NavItem>
+            {logged && <NavItem eventKey={4} onClick={logout}><Link to={base}>Logout</Link></NavItem>
             }
         </Nav>
 
@@ -107,32 +107,9 @@ class App extends React.Component {
 
     }
 
-    componentDidMount(){
-        const arr = location.href.split("?")[1].split("&").filter(x => x.split("=")[0] == "tour");
-        const enabledTour = (arr.length > 0) ? arr[0].split("=")[1] : 0;
-        if (enabledTour){
-            var tour = new Tour({
-                storage : false,
-                steps: [
-                    {
-                        element: "#searchTxt",
-                        title: "Search",
-                        placement : "top",
-                        content: "Main keyword search"
-                    },
-                    {
-                        element: "#advancedSearchBtn",
-                        title: "More options",
-                        content: "Click on advanced search for a more complete query",
-                        placement : "top",
-                        reflex : true
-                    }
-                ]});
 
-            tour.init();
-            tour.start();
-        }
-
+    componentDidMount() {
+        this.tour()
     }
 
     to = (page) => {
@@ -140,7 +117,21 @@ class App extends React.Component {
         window.location = `http://${this.props.ip}:${this.props.port}/${page}`;
     };
 
+    tour = () => {
+        if (location.href.split("?").length > 1) {
+            const arr = location.href.split("?")[1].split("&").filter(x => x.split("=")[0] === "tour");
+            const enabledTour = (arr.length > 0) ? arr[0].split("=")[1] : 0;
+            if (enabledTour==="1") {
+                tour_globin();
+            }
+        }
+    }
+
     render() {
+
+
+
+
         const {cookies} = this.props;
         const page = location.href.split("/")[location.href.split("/").length - 1];
         if (page !== "") {
@@ -167,7 +158,7 @@ class App extends React.Component {
                             methodology={() => this.to('organism')}
                             userGuide={() => this.to('group')}
                             tutorial={() => this.to('blast')}
-                            />
+                    />
 
 
                     <Route exact path={b} render={() => <Search base={b}
@@ -179,7 +170,7 @@ class App extends React.Component {
                     <Route path={b + "statistics"} component={Statistics}/>
                     <Route path={b + "downloads"} render={() =>
                         <Downloads
-                                      apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}/>
+                            apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}/>
 
                     }/>
                     <Route path={b + "userguide"} component={UserGuide}/>
@@ -198,13 +189,13 @@ class App extends React.Component {
 
                     <Route path={b + "register"} render={withRouter(({history}) =>
                         <Register base={b} apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}
-                               success={user => {
+                                  success={user => {
 
-                                   cookies.set('user', user, {path: '/'});
+                                      cookies.set('user', user, {path: '/'});
 
-                                   this.setState({user: user});
-                                   history.push("/upload");
-                               }}/>)}/>
+                                      this.setState({user: user});
+                                      history.push("/upload");
+                                  }}/>)}/>
 
 
                     <Route path={b + "upload"} render={() =>
@@ -228,7 +219,6 @@ class App extends React.Component {
                                                                 ip={this.props.ip}
                                                                 url={apiUrl + "protein/" + location.pathname.split("/")[location.pathname.split("/").length - 1]}
                                                                 search={location.search} component={Protein}/>}/>
-
 
 
                 </div>

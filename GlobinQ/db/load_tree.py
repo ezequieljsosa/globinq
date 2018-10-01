@@ -12,9 +12,12 @@ from Bio import Phylo
 from GlobinQ.db import mysql_db
 from GlobinQ.db.Model import Globin
 import json
+import configparser
 
+config = configparser.ConfigParser()
+config.read("./globinq.config")
 
-mysqldb = MySQLDatabase('globinq', user="root", password="mito")
+mysqldb = MySQLDatabase('globinq', user=config["mysql"]["user"], password=config["mysql"]["pass"])
 mysql_db.initialize(mysqldb)
 
 
