@@ -50,11 +50,13 @@ import Checkbox from 'rc-checkbox';
 //    </Table>
 //);
 
-const ResidueCol = ( {residueChange, residue}) => {
+const ResidueCol = ( {residueSetName,residueChange, residue}) => {
 
 
     return <tr>
-        <td width="10px"> <Checkbox checked={residue.status} onChange={( x ) => residueChange( residue, x.target.checked )} />  </td> <td width="10px"> {residue.aa}</td><td> {residue.name}</td>
+        <td width="10px"> <Checkbox name={"siteCheck" + residueSetName + "_" + residue.name} checked={residue.status}
+                                    onChange={( x ) => residueChange( residue, x.target.checked )} />
+        </td> <td width="10px"> {residue.aa}</td><td> {residue.name}</td>
     </tr>
 };
 
@@ -67,7 +69,7 @@ const ResiduesRow = ( props ) => {
             <tr><td colSpan={3}><b>{props.residueSet.name}</b></td></tr>
             {props.residueSet.residues.map(( residue, i ) => {
 
-                return <ResidueCol key={i} residue={residue} residueChange={props.residueChange} />
+                return <ResidueCol key={i} residueSetName={props.residueSet.name} residue={residue} residueChange={props.residueChange} />
 
             })}
 

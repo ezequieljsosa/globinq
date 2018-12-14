@@ -36,7 +36,7 @@ const GlobinTable = ( {base,globins, toGlobin}) => (
     <Table striped bordered condensed hover>
         <thead>
             <tr>
-                <th>Name</th>
+                <th id="globinNameCell">Name</th>
                 <th>Organism</th>
                 <th>Group</th>
 

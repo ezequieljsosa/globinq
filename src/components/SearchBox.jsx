@@ -202,7 +202,7 @@ class SearchBox extends React.Component {
 
                 <SearchText value={this.state.text} navigate={this.navigate} inputUpdated={this.inputUpdated}/>
                 <InputGroup.Button>
-                    <Link to={this.state.search}><Button> Search</Button></Link>
+                    <Link id="searchBtnLink"  to={this.state.search}><Button id="searchBtn"> Search</Button></Link>
                     <Button id="advancedSearchBtn" onClick={this.toogleAdvanced} bsStyle="link">Advanced Search</Button>
                 </InputGroup.Button>
             </InputGroup>

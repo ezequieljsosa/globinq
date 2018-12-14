@@ -33,7 +33,7 @@ const GlobinRecord = (props) => {
     })
 
 
-    return <Table striped bordered condensed hover>
+    return <Table id="globinRecord" striped bordered condensed hover>
 
         <thead>
         <tr>

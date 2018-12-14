@@ -20,7 +20,7 @@ class SearchResult extends React.Component {
 
                 <Row>
                     <Col md={12}>
-                        Download list as <a href={this.props.url + sep + "download=csv"}>csv</a> | <a href={this.props.url + sep + "download=fasta"}>fasta</a>
+                        Download list as <a id="dowloadLink" href={this.props.url + sep + "download=csv"}>csv</a> | <a href={this.props.url + sep + "download=fasta"}>fasta</a>
                         <GlobinTable base={this.props.base} 
                         globins={this.props.globins}
                         />

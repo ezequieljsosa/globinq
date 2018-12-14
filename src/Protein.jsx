@@ -4,6 +4,7 @@ import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
 
+
 import StructureViewer from './components/StructureViewer.jsx'
 import { Table, Grid, Row, Col, Tooltip, OverlayTrigger, Button, Glyphicon } from 'react-bootstrap';
 import SequenceViewer from './components/SequenceViewer.jsx'
@@ -14,6 +15,7 @@ import MSAPDB from './components/MSAPDB.jsx'
 import {
     Link
 } from 'react-router-dom'
+import Tour from "bootstrap-tour";
 
 
 class Protein extends React.Component {
@@ -44,7 +46,7 @@ class Protein extends React.Component {
             }
 
         });
-    }
+    };
     featureClicked = ( feature ) => {
                 
         const res_id = this.props.positions[feature.id].pdb_pos[this.props.pdbs[0]];
@@ -52,10 +54,10 @@ class Protein extends React.Component {
         this.refs.msapdb.selectPos( this.props.positions[feature.id].aln_pos +
             this.props.positions[feature.id].insertions
         );
-    }
+    };
     pdbChanged = ( pdb ) => {
         this.setState( { selectedPDB: pdb.value })
-    }
+    };
     createSeqs = () => {
         const me = this;
         let data = Object.keys( this.props.alns ).filter( x => x.startsWith( this.props.name) ).map( pdb_chain => {
@@ -79,6 +81,10 @@ class Protein extends React.Component {
         }));
 
         return data;
+    };
+    componentDidMount() {
+
+
     }
     render() {
         const tooltip = (
@@ -108,7 +114,7 @@ class Protein extends React.Component {
                         <Table striped bordered condensed hover>
 
                             <tbody>
-                                <tr> <td>Active Site</td> <td>  <SequenceViewer sequence={this.props.regions['AS'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id1" /> </td>
+                                <tr> <td id="activeSiteSeq">Active Site</td> <td>  <SequenceViewer sequence={this.props.regions['AS'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id1" /> </td>
                                     <td>        <OverlayTrigger placement="left" overlay={tooltip}>
                                         <Link to={this.props.base + "search?as=" + this.props.regions['AS'].reduced}><Button> <Glyphicon glyph="search" /></Button> </Link>
                                     </OverlayTrigger></td>
@@ -121,7 +127,7 @@ class Protein extends React.Component {
                                 <tr> <th>Tunnel</th> <th>Sequence</th> <th>% openness</th> <th>% Energetic barrier contribution</th> <th></th> </tr>
                             </thead>
                             <tbody>
-                                <tr><td>E7 Gate (E7G)</td><td>  <SequenceViewer sequence={this.props.regions['E7G'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id2" /> </td>
+                                <tr><td id="e7tableRow">E7 Gate (E7G)</td><td>  <SequenceViewer sequence={this.props.regions['E7G'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id2" /> </td>
                                     <td>{( this.props.regions['E7G'].opened ) && this.props.regions['E7G'].opened.toFixed( 0 )}</td>
                                     <td>{this.props.regions['E7G'].k && this.props.regions['E7G'].k.toExponential( 2 )} </td>
                                     <td>        <OverlayTrigger placement="left" overlay={tooltip}>
@@ -162,7 +168,7 @@ class Protein extends React.Component {
                         </Col>
                     <Col md={12}>
 
-                    {pdbs_list.length > 1 && <Select clearable={false}
+                    {pdbs_list.length > 1 && <Select id="structureSelect" clearable={false}
                         name="form-field-name"
                         
                         options={this.props.pdbs.filter(x => x.chain === "A").map( x => { return { value: x, label: [x.pdb,x.chain,x.description].join(" ")  } })}
