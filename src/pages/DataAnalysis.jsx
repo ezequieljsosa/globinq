@@ -51,7 +51,7 @@ const groupColors = { 'O': "#0056e2", 'N': "#27aa00", '?': "black", 'X': "brown"
 class DataAnalysis extends React.Component {
     
     constructor(props){
-        super(props)
+        super(props);
         this.selectedBranch = null;
     }
     
@@ -77,6 +77,7 @@ class DataAnalysis extends React.Component {
           labelIdLength: 50
         };
         const m = msa(opts);
+        $('#msaDiv').data(m);
         m.g.on("row:click", data => {
             //const name = m.seqs.at(data.seqId).attributes.name;
             //console.log(name);        
@@ -152,7 +153,7 @@ class DataAnalysis extends React.Component {
                     m.render();
                     $("span:contains('Label')").html("")
                 });
-                
+
                 
             const tree = Phylocanvas.createTree( 'tree' ,{multiSelect:false,disableZoom:false,textSize : 30});
             //tree.setTreeType('rectangular');
@@ -194,7 +195,6 @@ class DataAnalysis extends React.Component {
     }
     
     render(props ) {
-       
 
         return <Grid>
         
@@ -202,7 +202,7 @@ class DataAnalysis extends React.Component {
         
             <Row>
                 <Col md={12}>
-                    <h1>MSA</h1>
+                    <h1 id="msa_title">MSA</h1>
 <div id="msaDiv"></div>
 
                 </Col>
@@ -211,9 +211,9 @@ class DataAnalysis extends React.Component {
             <Row>
                 <Col md={12}>
                     
-                    <h1 style={{float: "left"}}>Tree
+                    <h1 id="tree_title" style={{float: "left"}}>Tree
                     </h1>
-                    <table style={{float: "right"}}>
+                    <table id="legend" style={{float: "right"}}>
                     <tr><td>Experimental Data</td><td style={{width:50, backgroundColor:"violet"}} ></td></tr>
                     <tr><td>PDB Avaliable</td><td style={{width:50, backgroundColor:"red"}} ></td></tr>
                     

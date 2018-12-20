@@ -50,12 +50,14 @@ const GlobinRecord = (props) => {
         </thead>
         <tbody>
 
+        {props.uniprot &&
         <tr>
             <td><b>Uniprot</b></td>
             <td colSpan={2}><a href={"http://www.uniprot.org/uniprot/" + props.uniprot}>{props.uniprot} <img
                 alt="go to uniprot page" src={props.base + "external.gif"}/> </a></td>
 
         </tr>
+        }
         <tr>
             <td>Organism-Strain</td>
             <td>{props.organism}
@@ -116,7 +118,7 @@ const GlobinRecord = (props) => {
         </tr>
         }
 
-        <tr>
+        <tr id="curated_tr">
             <td>Curated in alignment</td>
             <td colSpan={2}>
                 { (props.owner) ? 'No' : 'Yes'}
@@ -125,7 +127,7 @@ const GlobinRecord = (props) => {
         </tr>
 
         {props.closest_curated &&
-        <tr>
+        <tr id="closest_curated_tr">
             <td>Closest curated</td>
             <td colSpan={2}>
                 <a href={props.base + "protein/" + props.closest_curated.id}> {props.closest_curated.name} </a>
@@ -134,7 +136,7 @@ const GlobinRecord = (props) => {
         </tr>
         }
         {props.owner &&
-        <tr>
+        <tr id="owner_tr">
             <td>Uploaded By</td>
             <td colSpan={2}>
                 {props.owner}

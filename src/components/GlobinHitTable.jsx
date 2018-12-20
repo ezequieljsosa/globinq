@@ -25,8 +25,12 @@ const GlobinRow = (props) => {
             <td>{props.group}</td>
             <td>{(props.identity * 100).toFixed(0)} %</td>
             <td>{(props.coverage * 100).toFixed(0)} %</td>
-            <td style={{'width': '200px'}}> <div dangerouslySetInnerHTML={{ __html:props.exp}}></div> </td>
-            <td style={{'width': '250px'}}><div dangerouslySetInnerHTML={{ __html:props.calc}}></div></td>
+            <td style={{'width': '200px'}}>
+                <div dangerouslySetInnerHTML={{__html: props.exp}}></div>
+            </td>
+            <td style={{'width': '250px'}}>
+                <div dangerouslySetInnerHTML={{__html: props.calc}}></div>
+            </td>
             <td style={{'maxWidth': '250px'}}>
                 {pdbs.map((pdb, i) =>
                     <a key={i} href={'http://www.rcsb.org/pdb/explore/explore.do?structureId=' + pdb}> {pdb} <img
@@ -34,7 +38,7 @@ const GlobinRow = (props) => {
                 )}
             </td>
             <td>
-                <Button onClick={() => props.openAln(props.alignment)}>Alignment</Button>
+                <Button id={"aln_button_" + props.idx} onClick={() => props.openAln(props.alignment)}>Alignment</Button>
 
 
             </td>
@@ -91,8 +95,8 @@ class GlobinHitTable extends React.Component {
 
         var element = document.createElement("a");
         let txt = JSON.stringify(
-             [{name: query, seq: this.state.seqs[query]},
-            {name: hit, seq: this.state.seqs[hit]}]
+            [{name: query, seq: this.state.seqs[query]},
+                {name: hit, seq: this.state.seqs[hit]}]
         )
         var file = new Blob([txt], {type: 'text/plain'});
         element.href = URL.createObjectURL(file);
@@ -112,12 +116,12 @@ class GlobinHitTable extends React.Component {
                        contentLabel="Alignment">
                     <div id="msaDiv"></div>
                     <br/>
-                    <Button onClick={() => this.setState({open: false})}>Close</Button>
-                    <Button onClick={ this.downloadAln }>Download</Button>
+                    <Button id="close_aln_btn" onClick={() => this.setState({open: false})}>Close</Button>
+                    <Button onClick={this.downloadAln}>Download</Button>
                 </Modal>
 
 
-                {(globins.length > 0) ? <Table striped bordered condensed hover>
+                {(globins.length > 0) ? <Table id="globin_hit_table" striped bordered condensed hover>
                         <thead>
                         <tr>
                             <th>Name</th>
@@ -133,7 +137,8 @@ class GlobinHitTable extends React.Component {
                         </thead>
                         <tbody>
 
-                        {globins.map((g, i) => <GlobinRow key={i} base={this.props.base} openAln={this.openAln} {...g} />
+                        {globins.map((g, i) => <GlobinRow key={i} idx={i} base={this.props.base}
+                                                          openAln={this.openAln} {...g} />
                         )}
 
                         </tbody>

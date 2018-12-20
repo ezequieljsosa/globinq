@@ -26,7 +26,7 @@ class ColumnSelection extends Model {
 
 }
 */
-var ColumnSelection = Model.extend({
+const ColumnSelection = Model.extend({
    
 
     inRow: function () {
@@ -79,23 +79,8 @@ class MSAPDB extends React.Component {
 
     selectPos = ( pos ) => {
         
-        const pepe = new ColumnSelection( {xStart: pos, xEnd: pos} );
-        console.log(msa)
-//        this.m.g.selcol.add( new msa.selection.columnsel({xStart: 10, xEnd: 12}));
-//        this.m.g.selcol.add( {
-//            
-//
-//            inRow: function inRow() {
-//              return true;
-//            },
-//            inColumn: function inColumn(rowPos) {
-//              return pos <= rowPos && rowPos <= pos;
-//            },
-//            getLength: function getLength() {
-//              return pos- pos+1;
-//            }
-//          } );
-        this.m.g.selcol.add( pepe)
+        const sel = new ColumnSelection( {xStart: pos, xEnd: pos} );
+        this.m.g.selcol.add( sel)
         this.m.g.zoomer.setLeftOffset( (pos - 25) > 0 ? (pos - 25) : 0 )
 
 

@@ -17,7 +17,7 @@ import Statistics from './pages/Statistics.jsx';
 import UploadGlobin from './pages/UploadGlobin.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
-import {tour_globin} from './tours.js';
+import {tour_globin,tour_stats,tour_blast,tour_upload} from './tours.js';
 
 import {Cookies, withCookies} from 'react-cookie';
 import {instanceOf} from 'prop-types';
@@ -38,7 +38,7 @@ const Header = ({base, logged, logout}) => (
         <Nav>
             <NavItem eventKey={1}><Link to={base + "methodology"}>Methodology</Link></NavItem>
             <NavItem eventKey={1}><Link to={base + "global"}>Data </Link></NavItem>
-            <NavItem eventKey={1}><Link to={base + "statistics"}>Statistics </Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "statistics"}>AA Distributions </Link></NavItem>
             {/*<NavItem eventKey={2}><Link to={base + "userguide"}>User Guide</Link></NavItem>*/}
             <NavItem eventKey={3}><Link to={base + "tutorial"}>Interactive Tutorials</Link></NavItem>
             <NavItem eventKey={3}><Link to={base + "downloads"}>Downloads</Link></NavItem>
@@ -48,8 +48,11 @@ const Header = ({base, logged, logout}) => (
 
 
             <NavItem eventKey={4}><Link to={base + "about"}>About</Link></NavItem>
-            {logged && <NavItem eventKey={4} onClick={logout}><Link to={base}>Logout</Link></NavItem>
+            {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base}>Logout</Link></NavItem> :
+                <NavItem eventKey={5}><Link to={base + "login"}>Login</Link></NavItem>
             }
+
+
         </Nav>
 
 
@@ -124,8 +127,17 @@ class App extends React.Component {
             if (enabledTour==="1") {
                 tour_globin();
             }
+            if (enabledTour==="2") {
+                tour_stats();
+            }
+            if (enabledTour==="3") {
+                tour_blast();
+            }
+            if (enabledTour==="4") {
+                tour_upload();
+            }
         }
-    }
+    };
 
     render() {
 
@@ -141,7 +153,8 @@ class App extends React.Component {
         const apiUrl = this.props.apiUrl;
 
         const logout = () => {
-            cookies.set('user', null, {path: '/'});
+            delete cookies.user;
+            cookies.set('user', "", {path: '/'});
             this.setState({user: null});
 
         };
@@ -174,8 +187,10 @@ class App extends React.Component {
 
                     }/>
                     <Route path={b + "userguide"} component={UserGuide}/>
-                    <Route path={b + "tutorial"} component={Tutorial}/>
-                    <Route path={b + "about"} component={About}/>
+                    <Route path={b + "tutorial"} render={withRouter(({history}) =>
+                     <Tutorial user={this.state.user}  />
+                    )}/>
+                        <Route path={b + "about"} component={About}/>
                     <Route path={b + "login"} render={withRouter(({history}) =>
                         <Login base={b} apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}
                                success={user => {

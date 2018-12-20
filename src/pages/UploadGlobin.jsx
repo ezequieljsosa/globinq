@@ -5,8 +5,8 @@ import FormField from '../components/FormField.jsx';
 import OperationStatus from '../components/OperationStatus.jsx';
 import TaxSelect from '../components/TaxSelect.jsx';
 
-const kon = <span>Kon O<sup>2</sup> Predicted  [M<sup>-1</sup>s<sup>-1</sup>]  </span>;
-const koff = <span>Koff O<sup>2</sup> Predicted  [s<sup>-1</sup>]  </span>
+const kon = <span>Kon O<sup>2</sup> Experimental  [M<sup>-1</sup>s<sup>-1</sup>]  </span>;
+const koff = <span>Koff O<sup>2</sup> Experimental  [s<sup>-1</sup>]  </span>
 
 
 const globin_groups = ["P", "N", "O", "Q", "X"]
@@ -34,7 +34,7 @@ function isFloat(n) {
 const ExperimentalData = ({idx, model, updateInputValue}) => <div>
     <h4>{"Globin Variation " + idx.toString()}</h4>
     <FormField
-        name="name" value={model.name}
+        name={"name_" +  idx.toString()} value={model.name}
         placeholder="WT or Mutant short description" updateInputValue={updateInputValue}/>
 
     <FormField
@@ -109,7 +109,7 @@ class UploadGlobin extends React.Component {
             institute: "",
             email: "",
             experimental: [{
-                name: "WT",
+                name: "",
                 k_on_o2_exp: null,
                 k_off_o2_exp: null
             }],
@@ -146,9 +146,9 @@ class UploadGlobin extends React.Component {
             fieldErrors["p50"] = "invalid value"
         }
 
-        if (model.uniprot.trim() == "") {
-            fieldErrors["uniprot"] = "cant be empty"
-        }
+        // if (model.uniprot.trim() == "") {
+        //     fieldErrors["uniprot"] = "cant be empty"
+        // }
 
 
         if (model.sequence.length < 50) {
@@ -204,7 +204,7 @@ class UploadGlobin extends React.Component {
 
             <Row><Col md={12}>
 
-                <h3>Taxonomy</h3>
+                <h3 id="taxonomy_drop">Taxonomy</h3>
                 <TaxSelect apiUrl={this.props.apiUrl}
                            value={{label: this.state.model.tax.name, value: this.state.model.tax.id}}
                            onChange={(tax) => this.updateInputValue("tax", tax)}/>
@@ -235,12 +235,12 @@ class UploadGlobin extends React.Component {
                                            updateInputValue={(control, value) => this.updateInputValueExp(control, value, i)}/>
                     </div>
                 )}
-                <Button onClick={this.addExpData}> Add experimental Data</Button>
+                <Button id="add_exp_data_btn" onClick={this.addExpData}> Add experimental Data</Button>
             </Col>
             </Row>
             <Row><Col md={12}>
                 <hr/>
-                <Button disabled={this.state.disabled} onClick={this.saveGlobin}> Upload Globin</Button>
+                <Button id="upload_globin_btn" disabled={this.state.disabled} onClick={this.saveGlobin}> Upload Globin</Button>
                 <br/><br/><br/>
             </Col></Row>
 

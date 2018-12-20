@@ -74,9 +74,9 @@ class Search extends React.Component {
 
                         <Col md={12}>
 
-                            <h2>Blast Search </h2>                            
-                            <textarea onChange={(event) => this.setState({blast_seq:event.target.value})} style={{ width: "100%" }} rows="5">{this.blast_seq}</textarea>
-                            <Button onClick={this.blast} >Blast</Button>
+                            <h2 id="blast_caption">Blast Search </h2>
+                            <textarea id="blast_textarea" onChange={(event) => this.setState({blast_seq:event.target.value})} style={{ width: "100%" }} rows="5">{this.blast_seq}</textarea>
+                            <Button id="blast_btn" onClick={this.blast} >Blast</Button>
                         </Col>
                     </Row>
                 </Grid>

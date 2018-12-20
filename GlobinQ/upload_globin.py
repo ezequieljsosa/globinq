@@ -100,7 +100,7 @@ def upload_globin(postdata):
         scod = "".join([pos_aa[pos] for pos in sites["sa"]])
 
         new_globin = Globin(
-            uniprot=postdata["uniprot"],
+            uniprot=postdata.get("uniprot","unknown"),
             tax=tax,
             globin_group=g.globin_group,
             sequence=sequence,

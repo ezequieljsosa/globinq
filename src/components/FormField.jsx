@@ -7,7 +7,7 @@ const FormField = ( {name,label,value,error,disabled,placeholder,updateInputValu
     <div>
         <h3>{label}</h3>
         <FormGroup validationState={error && "error"}>
-            <FormControl type={password && "password"}
+            <FormControl id={name} type={password && "password"}
                 autoFocus={autoFocus} disabled={disabled} value={value} placeholder={placeholder}
         
         componentClass={area ? "textarea" : "input"}

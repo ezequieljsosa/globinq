@@ -88,7 +88,7 @@ class Protein extends React.Component {
     }
     render() {
         const tooltip = (
-            <Tooltip id="tooltip">Graph # proteins with this and other possible combinations</Tooltip>
+            <Tooltip id="tooltip">Query proteins with similar site composition</Tooltip>
         );
         const pdbs_list = [];
         this.props.pdbs.forEach( x => {
