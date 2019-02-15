@@ -5,18 +5,17 @@ import {Table, Tooltip, OverlayTrigger, Glyphicon, Button} from 'react-bootstrap
 import {
     Link
 } from 'react-router-dom'
-
+import AddDataBtn from './AddDataBtn.jsx'
 
 const ExpStr = ({exp}) => <span>
-    <b>{exp.name}</b><br />
+    <b>{exp.name}</b> {exp.owner && "(" } {exp.owner && exp.owner.institution }  {exp.owner && exp.owner.name } {exp.owner && ")" }<br />
     {exp.koff && <span>koff = {exp.koff.toExponential(2)} s<sup>-1</sup><br /></span>}
     {exp.kon && <span> kon = {exp.kon.toExponential(2)} M<sup>−1</sup>s<sup>−1</sup></span>}
     <br/>
-</span>
+</span>;
 const ExpsStr = ({exps}) => {
-
     return <div>{exps.map((exp, i) => <ExpStr exp={exp} key={i}/>)}</div>
-}
+};
 
 const GlobinRecord = (props) => {
 
@@ -30,7 +29,7 @@ const GlobinRecord = (props) => {
         if (pdbs_list.indexOf(x) === -1) {
             pdbs_list.push(x)
         }
-    })
+    });
 
 
     return <Table id="globinRecord" striped bordered condensed hover>
@@ -95,19 +94,19 @@ const GlobinRecord = (props) => {
         {props.experimental &&
         <tr>
             <td>Experimental Values</td>
-            <td colSpan={2}>
+            <td>
 
                 <ExpsStr exps={props.experimental}/>
 
 
             </td>
-
+            <td><AddDataBtn apiUrl={props.apiUrl}  ctype="exp" user={props.user} protein={props} /></td>
         </tr>}
         {props.calculated &&
         <tr>
             <td>Theoretical Values</td>
             <td colSpan={2}>
-                <b>WT</b><br />
+                {(props.calculated.koff || props.calculated.kon ) && <div><b>WT</b><br /></div> }
                 {props.calculated.koff && <span>koff = {props.calculated.koff.toExponential(2)} s<sup>-1</sup><br /></span>}
                 {props.calculated.kon &&
                     <span> kon = {props.calculated.kon.toExponential(2)} M<sup>−1</sup>s<sup>−1</sup><br /></span>}

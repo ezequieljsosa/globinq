@@ -15,6 +15,8 @@ import About from './pages/About.jsx';
 import DataAnalysis from './pages/DataAnalysis.jsx';
 import Statistics from './pages/Statistics.jsx';
 import UploadGlobin from './pages/UploadGlobin.jsx';
+import User from './pages/User.jsx';
+
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import {tour_globin,tour_stats,tour_blast,tour_upload} from './tours.js';
@@ -44,13 +46,15 @@ const Header = ({base, logged, logout}) => (
             <NavItem eventKey={3}><Link to={base + "downloads"}>Downloads</Link></NavItem>
             {(logged) ?
                 <NavItem eventKey={3}><Link to={base + "upload"}>Upload My Globin</Link></NavItem>
-                : <NavItem eventKey={3}><Link to={base + "login"}>Upload My Globin</Link></NavItem>}
+                : <NavItem eventKey={3} disabled="" >Upload Globin(Register First)</NavItem>}
 
 
             <NavItem eventKey={4}><Link to={base + "about"}>About</Link></NavItem>
             {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base}>Logout</Link></NavItem> :
                 <NavItem eventKey={5}><Link to={base + "login"}>Login</Link></NavItem>
             }
+            {logged && <NavItem eventKey={6} onClick={logout}><Link to={base + "user/"  + logged.id.toString()}>My Data</Link></NavItem> }
+
 
 
         </Nav>
@@ -81,7 +85,8 @@ class AjaxWrapper extends React.Component {
     }
 
     render() {
-        return (this.state.data) ? <this.props.component url={this.url} base={this.props.base} {...this.state.data} /> :
+        return (this.state.data) ? <this.props.component user={this.props.user} url={this.url} apiUrl={this.props.apiUrl}
+                                                         base={this.props.base} {...this.state.data} /> :
             <h1>Loading...</h1>
     }
 
@@ -198,7 +203,7 @@ class App extends React.Component {
                                    cookies.set('user', user, {path: '/'});
 
                                    this.setState({user: user});
-                                   history.push("/upload");
+                                   history.push("/user/"  + user.id.toString());
                                }}/>)}/>
 
 
@@ -209,7 +214,7 @@ class App extends React.Component {
                                       cookies.set('user', user, {path: '/'});
 
                                       this.setState({user: user});
-                                      history.push("/upload");
+                                      history.push("/user/"  + user.id.toString());
                                   }}/>)}/>
 
 
@@ -218,6 +223,19 @@ class App extends React.Component {
                                       apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}/>
 
                     }/>
+
+                    { this.state.user &&
+                        <Route path={b + "user"} render={() =>
+
+                            <AjaxWrapper base={b} port={this.props.port}
+                                         ip={this.props.ip} user={this.state.user}
+                                         apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}
+                                         url={apiUrl + "user/" + this.state.user.id.toString()} search={location.search}
+                                         component={User}/>}/>
+                    }
+
+
+
 
                     <Route path={b + "search"}
                            render={({location}) => <AjaxWrapper base={b} port={this.props.port}
@@ -232,7 +250,10 @@ class App extends React.Component {
                     <Route path={b + "protein"}
                            render={({location}) => <AjaxWrapper base={b} port={this.props.port}
                                                                 ip={this.props.ip}
-                                                                url={apiUrl + "protein/" + location.pathname.split("/")[location.pathname.split("/").length - 1]}
+                                                                user={this.state.user }
+                                                                apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}
+                                                                url={apiUrl + "protein/" + location.pathname.split(
+                                                                    "/")[location.pathname.split("/").length - 1]}
                                                                 search={location.search} component={Protein}/>}/>
 
 

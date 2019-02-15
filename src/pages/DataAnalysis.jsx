@@ -160,6 +160,7 @@ class DataAnalysis extends React.Component {
             tree.alignLabels = true;
             
             tree.on( 'beforeFirstDraw', function() {
+
                 tree.textSize = 24 //tree.textSize - 2
                 for ( var i = 0; i < tree.leaves.length; i++ ) {
                     
@@ -183,7 +184,10 @@ class DataAnalysis extends React.Component {
                     };
                 }
             });
-            
+                tree.on('loaded', () => {
+                 //   $("#tree__canvas").css("position","relative").css("position","relative");
+                    $("#tree__canvas").show();
+                });
             
             
             tree.load( text );
@@ -211,21 +215,23 @@ class DataAnalysis extends React.Component {
             <Row>
                 <Col md={12}>
                     
-                    <h1 id="tree_title" style={{float: "left"}}>Tree
+                    <h1 id="tree_title">Tree
                     </h1>
-                    <table id="legend" style={{float: "right"}}>
-                    <tr><td>Experimental Data</td><td style={{width:50, backgroundColor:"violet"}} ></td></tr>
-                    <tr><td>PDB Avaliable</td><td style={{width:50, backgroundColor:"red"}} ></td></tr>
-                    
-                    <tr><td>N Group</td><td style={{width:50, backgroundColor:"#27aa00"}} ></td></tr>
-                    <tr><td>O Group</td><td style={{width:50, backgroundColor:"#0056e2"}} ></td></tr>
-                    <tr><td>P Group</td><td style={{width:50, backgroundColor:"#ff7200"}} ></td></tr>
-                    <tr><td>Q Group</td><td style={{width:50, backgroundColor:"#ffdd00"}} ></td></tr>
-                    </table>
-                    
+
+
+
+                        <table id="legend" style={{position:"absolute",top: "100px"}} >
+                            <tr><td>Experimental Data</td><td style={{width:50, backgroundColor:"violet"}} ></td></tr>
+                            <tr><td>PDB Avaliable</td><td style={{width:50, backgroundColor:"red"}} ></td></tr>
+
+                            <tr><td>N Group</td><td style={{width:50, backgroundColor:"#27aa00"}} ></td></tr>
+                            <tr><td>O Group</td><td style={{width:50, backgroundColor:"#0056e2"}} ></td></tr>
+                            <tr><td>P Group</td><td style={{width:50, backgroundColor:"#ff7200"}} ></td></tr>
+                            <tr><td>Q Group</td><td style={{width:50, backgroundColor:"#ffdd00"}} ></td></tr>
+                        </table>
                    
-                    <div style={{height:1000}} id="tree" >
-                    
+                    <div style={{height:1000,position:"absolute",top: "-20px"}} id="tree"  >
+
                    
                     </div>
                    

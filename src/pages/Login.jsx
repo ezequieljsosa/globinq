@@ -12,13 +12,13 @@ class Login extends React.Component {
     state = {
         error: "", ok: "", fieldErrors: {},
         model: {email: "", password: ""}
-    }
+    };
 
     updateInputValue = (control, value) => {
         const model = this.state.model;
         model[control] = value;
         this.setState({'model': model});
-    }
+    };
 
     login = () => {
 

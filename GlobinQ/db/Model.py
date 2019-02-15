@@ -18,8 +18,11 @@ class GlobinqModel(Model):
     class Meta:
         database = mysql_db
 
+    def to_dict(self):
+        return {str(k): v for k, v in self.__data__.items() if k != "password"}
+
     def __str__(self):
-        return json.dumps({str(k): v for k, v in self.__data__.items()}, sort_keys=True)
+        return json.dumps(self.to_dict(), sort_keys=True)
 
     def __repr__(self):
         return self.__str__()
@@ -33,6 +36,7 @@ class User(GlobinqModel):
 
     class Meta:
         database = mysql_db
+
 
 
 class Tax(GlobinqModel):
@@ -189,6 +193,19 @@ class PDB(GlobinqModel):
     class Meta:
         database = mysql_db
 
+
+class Contribution(GlobinqModel):
+    ctype = CharField(choices=[("exp","exp"),("pdb","pdb")])
+    user = ForeignKeyField(User, related_name='contributions')
+    experimental = ForeignKeyField(ExperimentalData, related_name='contribuited',null=True)
+    pdb = ForeignKeyField(PDB, related_name='contribuited',null=True)
+    paper = CharField(default="")
+    description = TextField(default="")
+    creation = DateTimeField()
+    last_update = DateTimeField()
+
+    class Meta:
+        database = mysql_db
 
 class PosInsertion(GlobinqModel):
     globin = ForeignKeyField(Globin, related_name='insertions')

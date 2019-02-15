@@ -5,12 +5,15 @@ import 'react-select/dist/react-select.css';
 
 
 
+
+
 import StructureViewer from './components/StructureViewer.jsx'
 import { Table, Grid, Row, Col, Tooltip, OverlayTrigger, Button, Glyphicon } from 'react-bootstrap';
 import SequenceViewer from './components/SequenceViewer.jsx'
 import SequenceFeaturesViewer from './components/SequenceFeaturesViewer.jsx'
 import GlobinRecord from './components/GlobinRecord.jsx'
 import MSAPDB from './components/MSAPDB.jsx'
+import AddDataBtn from './components/AddDataBtn.jsx'
 
 import {
     Link
@@ -97,14 +100,19 @@ class Protein extends React.Component {
             }
         });
         return (
+
+
+
             <Grid>
 
                 <Row>
                     <Col md={12}>
 
+
                         <GlobinRecord base={this.props.base} toList={this.props.toList}
                                       toGlobinGroup={this.props.toGlobinGroup}
                                       organism={this.props.organism}
+                                      user={this.props.user} apiUrl={this.props.apiUrl}
                             {... this.props} />
                     </Col>
                 </Row>
@@ -129,20 +137,20 @@ class Protein extends React.Component {
                             <tbody>
                                 <tr><td id="e7tableRow">E7 Gate (E7G)</td><td>  <SequenceViewer sequence={this.props.regions['E7G'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id2" /> </td>
                                     <td>{( this.props.regions['E7G'].opened ) && this.props.regions['E7G'].opened.toFixed( 0 )}</td>
-                                    <td>{this.props.regions['E7G'].k && this.props.regions['E7G'].k.toExponential( 2 )} </td>
+                                    <td>{this.props.regions['E7G'].k ? this.props.regions['E7G'].k.toExponential( 2 ) : "not calculated"} </td>
                                     <td>        <OverlayTrigger placement="left" overlay={tooltip}>
                                         <Link to={this.props.base + "search?e7=" + this.props.regions['E7G'].reduced}><Button> <Glyphicon glyph="search" /></Button> </Link>
                                     </OverlayTrigger></td>
                                 </tr>
                                 <tr> <td>Short Tunnel G8 (STG8)</td><td>  <SequenceViewer sequence={this.props.regions['STG8'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id3" /> </td>
                                     <td>{( this.props.regions['STG8'].opened ) && parseFloat( this.props.regions['STG8'].opened ).toFixed( 0 )}</td>
-                                    <td>{this.props.regions['STG8'].k && this.props.regions['STG8'].k.toExponential( 2 )} </td>
+                                    <td>{this.props.regions['STG8'].k ? this.props.regions['STG8'].k.toExponential( 2 ) : "not calculated"} </td>
                                     <td>        <OverlayTrigger placement="left" overlay={tooltip}>
                                         <Link to={this.props.base + "search?g8=" + this.props.regions['STG8'].reduced}><Button> <Glyphicon glyph="search" /></Button> </Link>
                                     </OverlayTrigger></td></tr>
                                 <tr> <td>Long Tunnel (LT)</td><td>  <SequenceViewer sequence={this.props.regions['LT'].residues.map( x => x.res ).join( "" )} flat={true} div_id="div_id9" /> </td>
                                     <td>{( this.props.regions['LT'].opened ) && parseFloat( this.props.regions['LT'].opened ).toFixed( 0 )}</td>
-                                    <td>{this.props.regions['LT'].k && this.props.regions['LT'].k.toExponential( 2 )} </td>
+                                    <td>{this.props.regions['LT'].k ? this.props.regions['LT'].k.toExponential( 2 ) : "not calculated" } </td>
                                     <td>        <OverlayTrigger placement="left" overlay={tooltip}>
                                         <Link to={this.props.base + "search?lt=" + this.props.regions['LT'].reduced}><Button> <Glyphicon glyph="search" /></Button> </Link>
                                     </OverlayTrigger></td></tr>
@@ -159,7 +167,9 @@ class Protein extends React.Component {
                     </Col>
 
                 </Row>
-
+                <br />
+                <AddDataBtn apiUrl={this.props.apiUrl} ctype="pdb" user={this.props.user} protein={this.props} title="Associate with PDB" />
+                <br />
                 {  (pdbs_list.length > 0)  &&
                     <Row>
                       
@@ -167,7 +177,7 @@ class Protein extends React.Component {
                             <MSAPDB ref='msapdb' seqs={this.createSeqs()} pdb={this.state.selectedPDB} />
                         </Col>
                     <Col md={12}>
-
+                    <br />
                     {pdbs_list.length > 1 && <Select id="structureSelect" clearable={false}
                         name="form-field-name"
                         

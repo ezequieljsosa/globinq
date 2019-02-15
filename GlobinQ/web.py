@@ -3,12 +3,13 @@ Created on Dec 30, 2016
 
 @author: eze
 '''
+
 import json
 import os
 import subprocess as sp
 import tempfile
 import uuid
-
+import datetime
 import Bio.SearchIO as bpsio
 import Bio.SeqIO as bpio
 import bottle
@@ -23,8 +24,9 @@ from peewee import DoesNotExist, MySQLDatabase, JOIN
 
 from GlobinQ.db import mysql_db, site_pos, sites
 from GlobinQ.db.Model import Globin, IndexKeyword, Tax, PDB, Channel, \
-    ExperimentalData, User
+    ExperimentalData, User, Contribution
 from GlobinQ.upload_globin import upload_globin
+import traceback
 
 monkey.patch_all()
 
@@ -113,6 +115,9 @@ def serialize_globin(globin):
     insertions = {x: 0 for x in site_pos.keys()}
     for i in globin.insertions:
         insertions[i.g_position] = i.insertions
+    exp_contributions = {x.experimental.id: x for x in
+                         Contribution.select().where(Contribution.experimental_id in globin.experimental)}
+
     gdict = {
         'id': globin.id,
         "tax": globin.tax.id,
@@ -127,8 +132,9 @@ def serialize_globin(globin):
         "experimental": [{
             'kon': x.k_on_o2_exp,
             'koff': x.k_off_o2_exp,
-            'name': x.sequence_red
-
+            'name': x.sequence_red,
+            'owner': {k: v for k, v in exp_contributions[x.id].user.to_dict().items() if
+                      k != "password"} if x.id in exp_contributions else {}
         } for x in globin.experimental],
         'p50': globin.p50,
         "calculated": {
@@ -274,7 +280,6 @@ def search():
         query = query.where(Globin.tax == Tax.select().where(Tax.id == tax).get())
 
     if ("as" in request.query) and request.query["as"]:
-        print request.query["as"]
         query = query.where(Globin.active_site_red.regexp(str(request.query["as"])))
 
     if ("e7" in request.query) and request.query["e7"]:
@@ -309,7 +314,7 @@ def search():
                     for x in query:
                         r = SeqRecord(id=x.name, seq=Seq(x.sequence),
                                       description=x.tax.name + " " +
-                                                  str(x.tax.id) + " " + str(x.uniprot) )
+                                                  str(x.tax.id) + " " + str(x.uniprot))
                         bpio.write(r, tmp, "fasta")
             return static_file(path, root="/", download="query." + request.query["download"])
         finally:
@@ -339,6 +344,31 @@ def protein(protein_id):
     return serialize_globin(globin)
 
 
+@get("/user/<user_id>")
+def protein(user_id):
+    try:
+        user = User.get_by_id(user_id)
+    except DoesNotExist:
+        abort(404, "no such user")
+    doc = user.to_dict()
+    doc["globins"] = [{"id":g.id,"name": g.name, "group": g.globin_group}
+                      for g in Globin.select(Globin.id,Globin.name, Globin.globin_group).where(Globin.owner == user)]
+    doc["contributions"] = []
+    for c in Contribution.select().where(Contribution.user == user):
+        data = {}
+        for k, v in c.to_dict().items():
+
+            if k == "experimental":
+                data["experimental"] = ExperimentalData.get_by_id(v).to_dict()
+                data["experimental"]["globin_name"] = Globin.get_by_id(int(data["experimental"]["globin"])).globinName()
+            else:
+                data[k] = v.isoformat() if k in ["creation", "last_update"] else v
+
+        doc["contributions"].append(data)
+
+    return doc
+
+
 @post("/blast")
 def blast():
     postdata = json.loads(request.body.read())
@@ -355,15 +385,65 @@ def blast():
 
 
 @post("/upload")
-def blast():
+def upload():
     postdata = json.loads(request.body.read())
     return upload_globin(postdata)
+
+
+@post("/addData")
+def addData():
+    postdata = json.loads(request.body.read())
+    with mysql_db.atomic() as transaction:
+        try:
+            if "id" in postdata:
+                contrib = Contribution.get_by_id(postdata["id"])
+            else:
+                contrib = Contribution()
+                contrib.user = User.get_by_id(int(postdata["user"]))
+                contrib.ctype = postdata["ctype"].strip().lower()
+                contrib.creation = datetime.datetime.now()
+            contrib.last_update = datetime.datetime.now()
+
+
+            contrib.paper = postdata["paper"]
+            contrib.description = postdata["description"]
+
+
+
+            if contrib.ctype == "exp":
+                if "id" in postdata:
+                    exp = contrib.experimental
+                else:
+                    exp = ExperimentalData(globin=Globin.get_by_id(int(postdata["protein"])))
+
+                exp.k_on_o2_exp=float(postdata["k_on_o2_exp"])
+                exp.k_off_o2_exp=float(postdata["k_off_o2_exp"])
+                exp.sequence_red=postdata["condition"]
+
+                exp.save()
+                contrib.experimental = exp
+            elif contrib.ctype == "pdb":
+                contrib.pdb = postdata["pdb"]
+            else:
+                raise Exception("invalid ctype:" + postdata)
+
+            contrib.save()
+
+            return {"id": postdata["protein"]}
+
+        except Exception as ex:
+            print(traceback.format_exc())
+            # exc_info = sys.exc_info()
+            # traceback.print_exception(*exc_info)
+            # del exc_info
+
+            transaction.rollback()
+            return {"error": "error processing the contribution"}
 
 
 @post("/login")
 def login():
     credentials = json.loads(request.body.read())
-    print credentials
     user = list(User.select().where(
         (User.email == str(credentials["email"])) &
         (User.password == str(credentials["password"]))))
@@ -399,7 +479,6 @@ def blast_result():
     for q in bpsio.parse("/tmp/%s/result.xml" % blast_id, "blast-xml"):
         for h in q:
             for hsp in h:
-                print hsp.query_id
                 g = list(Globin.select().where(Globin.aln_id == hsp.hit_id))[0]
                 res = serialize_search_globin(g)
                 res["identity"] = identity(hsp)

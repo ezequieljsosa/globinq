@@ -1,12 +1,12 @@
 import React from 'react';
-import {Grid, Row, Col, Table, Button, FormControl} from 'react-bootstrap';
+import {Grid, Row, Col, Table, Button} from 'react-bootstrap';
 
 import FormField from '../components/FormField.jsx';
 import OperationStatus from '../components/OperationStatus.jsx';
 import TaxSelect from '../components/TaxSelect.jsx';
+import ExperimentalData from '../components/ExperimentalData.jsx';
 
-const kon = <span>Kon O<sup>2</sup> Experimental  [M<sup>-1</sup>s<sup>-1</sup>]  </span>;
-const koff = <span>Koff O<sup>2</sup> Experimental  [s<sup>-1</sup>]  </span>
+
 
 
 const globin_groups = ["P", "N", "O", "Q", "X"]
@@ -31,22 +31,7 @@ function isFloat(n) {
     return !isNaN(parseFloat(n))
 }
 
-const ExperimentalData = ({idx, model, updateInputValue}) => <div>
-    <h4>{"Globin Variation " + idx.toString()}</h4>
-    <FormField
-        name={"name_" +  idx.toString()} value={model.name}
-        placeholder="WT or Mutant short description" updateInputValue={updateInputValue}/>
 
-    <FormField
-        label={kon} name="k_on_o2_exp" value={model.k_on_o2_exp}
-        placeholder="kon" updateInputValue={updateInputValue}/>
-
-    <FormField
-        label={koff} name="k_off_o2_exp" value={model.k_off_o2_exp}
-        placeholder="off" updateInputValue={updateInputValue}/>
-
-
-</div>
 
 const ChanelInput = ({chanelName, model, sequence, posmap, updateInputValue, positions}) => <div>
     <h2>{chanelName}</h2>
@@ -72,7 +57,7 @@ const ChanelInput = ({chanelName, model, sequence, posmap, updateInputValue, pos
         placeholder="10" updateInputValue={updateInputValue}/>
 
 
-</div>
+</div>;
 
 class UploadGlobin extends React.Component {
 
@@ -122,7 +107,7 @@ class UploadGlobin extends React.Component {
         const model = this.state.model;
         model[control] = value;
         this.setState({'model': model});
-    }
+    };
     updateInputValueExp = (control, value, i) => {
         const model = this.state.model;
         model["experimental"][i][control] = value;
@@ -231,7 +216,7 @@ class UploadGlobin extends React.Component {
                     placeholder="p50" updateInputValue={this.updateInputValue}/>
 
                 {this.state.model.experimental.map((x, i) =>
-                    <div><ExperimentalData key={i} model={x} idx={i + 1}
+                    <div><ExperimentalData key={i} model={x} idx={i + 1} errors={this.state.fieldErrors}
                                            updateInputValue={(control, value) => this.updateInputValueExp(control, value, i)}/>
                     </div>
                 )}

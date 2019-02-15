@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 from GlobinQ.db import mysql_db, reduced_code, sites, site_pos
 from GlobinQ.db.Model import Tax, Globin, Channel, PDB, GlobinPosition, \
-    IndexKeyword, GlobinPDBPosition, ExperimentalData, PosInsertion, User
+    IndexKeyword, GlobinPDBPosition, ExperimentalData, PosInsertion, User,
 
 pdbl = PDBList(pdb="/data/databases/pdb/divided/")
 
