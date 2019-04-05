@@ -156,3 +156,5 @@ XlsxWriter==1.0.2
 xmltodict==0.11.0
 yahmm==1.1.2
 yoyo-migrations==5.0.5
+pycrypto
+requests

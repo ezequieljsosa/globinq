@@ -7,14 +7,15 @@ import {
 } from 'react-router-dom'
 import AddDataBtn from './AddDataBtn.jsx'
 
-const ExpStr = ({exp}) => <span>
+const ExpStr = ({exp,user}) => <span>
     <b>{exp.name}</b> {exp.owner && "(" } {exp.owner && exp.owner.institution }  {exp.owner && exp.owner.name } {exp.owner && ")" }<br />
     {exp.koff && <span>koff = {exp.koff.toExponential(2)} s<sup>-1</sup><br /></span>}
     {exp.kon && <span> kon = {exp.kon.toExponential(2)} M<sup>−1</sup>s<sup>−1</sup></span>}
+    {(exp.owner.id === user.id) && <Link bsStyle="info" to={"/user/" + exp.owner.id} > Edit </Link>}
     <br/>
 </span>;
-const ExpsStr = ({exps}) => {
-    return <div>{exps.map((exp, i) => <ExpStr exp={exp} key={i}/>)}</div>
+const ExpsStr = ({exps,user}) => {
+    return <div>{exps.map((exp, i) => <ExpStr exp={exp} key={i} user={user}/>)}</div>
 };
 
 const GlobinRecord = (props) => {
@@ -96,7 +97,7 @@ const GlobinRecord = (props) => {
             <td>Experimental Values</td>
             <td>
 
-                <ExpsStr exps={props.experimental}/>
+                <ExpsStr user={props.user} exps={props.experimental}/>
 
 
             </td>

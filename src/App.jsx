@@ -53,7 +53,7 @@ const Header = ({base, logged, logout}) => (
             {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base}>Logout</Link></NavItem> :
                 <NavItem eventKey={5}><Link to={base + "login"}>Login</Link></NavItem>
             }
-            {logged && <NavItem eventKey={6} onClick={logout}><Link to={base + "user/"  + logged.id.toString()}>My Data</Link></NavItem> }
+            {logged && <NavItem eventKey={6}><Link to={base + "user/"  + logged.id.toString()}>My Data</Link></NavItem> }
 
 
 

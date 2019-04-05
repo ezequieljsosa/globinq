@@ -99,6 +99,7 @@ class Globin(GlobinqModel):
     p50 = FloatField(null=True)
     k_on_o2_pred = FloatField(null=True)
     k_off_o2_pred = FloatField(null=True)
+    removed = BooleanField(default=False)
 
     def hasExperimental(self):
 
@@ -203,6 +204,7 @@ class Contribution(GlobinqModel):
     description = TextField(default="")
     creation = DateTimeField()
     last_update = DateTimeField()
+    removed = BooleanField(default=False)
 
     class Meta:
         database = mysql_db

@@ -32,17 +32,73 @@ g320 = Globin.select().where(Globin.id == 320).get()
 p2gkn = PDB.select().where((PDB.globin == g320) &  (PDB.pdb=="2gkn") & (PDB.chain == "A")  ).get()
 """
 
-pdbl = PDBList(pdb="/data/databases/pdb/divided/")
-msa = {x.id: x for x in bpio.parse("data/MSA.fasta", "fasta")}
-alns = defaultdict(lambda: {})
 
-pepe = {q.id: q for q in bpsio.parse("data/generated/blast_pdb.xml", "blast-xml")}
-for q in tqdm(pepe.values()):
-    for hit in q:
-        for hsp in hit:
-            alns[q.id]["_".join(hit.id.split("_")[0:2])] = hsp
+def process_globin_structure(g,s,alns,polypeps,gid=lambda g:g.aln_id):
+    """
+
+    :param g: Globin
+    :param s: PDB
+    :param alns: dict<globin_id,dict<pdb_chain,alignment>>
+    :return:
+    """
+    hsp = alns[gid(g)][s.pdb + "_" + s.chain]
+    posmap = {}
+    posmap_aa = {}
+
+    gpos = 0
+    pdbpos = 0
+    for hsp_pos in range(len(hsp.aln[0])):
+        aa_g = hsp.aln[0][hsp_pos]
+        aa_pdb = hsp.aln[1][hsp_pos]
+        # if aa_g != "-" and aa_pdb != "-":
+        if aa_pdb != "-":
+            if aa_g != "-":
+                posmap[hsp.query_start + gpos] = hsp.hit_start + pdbpos
+                posmap_aa[hsp.query_start + gpos] = aa_pdb
+            else:
+                raise Exception("There should not be any insertion")
+        if aa_g != "-":
+            gpos += 1
+        if aa_pdb != "-":
+            pdbpos += 1
+
+    gpos = 0
+    seq_pdb = ""
+    for aln_pos, aln_aa in enumerate(g.aln_seq):
+        if aln_aa == "-":
+            aa = "-"
+        else:
+            if gpos in posmap:
+                aa = posmap_aa[gpos]
+            else:
+                aa = "-"
+            gpos += 1
+        seq_pdb = seq_pdb + aa
+
+    if seq_pdb:
+        s.aln_seq = seq_pdb
+        s.save()
+        for gpos in g.positions:
+            seq_pos = posmap[gpos.seq_pos]
+            seq_pdb = seq_pdb[:site_pos[gpos.g_position] + 1]
+            if s.chain in polypeps[s.pdb]:
+                res_id = polypeps[s.pdb][s.chain][seq_pos]
+                res_id = str(res_id.id[0]) + str(res_id.id[1])
+                GlobinPDBPosition(pdb=s, globin_pos=gpos, pdb_res_id=res_id).save()
 
 if __name__ == '__main__':
+
+    pdbl = PDBList(pdb="/data/databases/pdb/divided/")
+    msa = {x.id: x for x in bpio.parse("data/MSA.fasta", "fasta")}
+    alns = defaultdict(lambda: {})
+
+    blast_results = {q.id: q for q in bpsio.parse("data/generated/blast_pdb.xml", "blast-xml")}
+    for q in tqdm(blast_results.values()):
+        for hit in q:
+            for hsp in hit:
+                alns[q.id]["_".join(hit.id.split("_")[0:2])] = hsp
+
+
     config = configparser.ConfigParser()
     config.read("./globinq.config")
 
@@ -80,8 +136,8 @@ if __name__ == '__main__':
                     polipep = list(ppb.build_peptides(structure[0][s.chain]))[0]
                     polypeps[pdb][s.chain] = polipep
                     seq = polipep.get_sequence()
-                    if len(seq):
-                        bpio.write(SeqRecord(id=pdb + "_" + s.chain, seq=seq), h, "fasta")
+                if len(seq):
+                    bpio.write(SeqRecord(id=pdb + "_" + s.chain, seq=seq), h, "fasta")
 
     #     sp.call( "hmmbuild --amino  --fragthresh 0  data/generated/globin.hmm data/generated/msa.fasta" ,shell=True )
     #     sp.call( "hmmalign --mapali data/generated/msa.fasta  -o  data/generated/pdbs.hmm data/generated/globin.hmm " + pdbs_fasta + " ",shell=True )
@@ -94,53 +150,12 @@ if __name__ == '__main__':
     assert alns
 
 
+
+
     for g in tqdm(Globin.select().join(PDB), total=total):
         with mysqldb.atomic():
             for s in g.structures:
+                process_globin_structure(g,s,alns,polypeps)
 
-                hsp = alns[g.aln_id][s.pdb + "_" + s.chain]
-                posmap = {}
-                posmap_aa = {}
-
-                gpos = 0
-                pdbpos = 0
-                for hsp_pos in range(len(hsp.aln[0])):
-                    aa_g = hsp.aln[0][hsp_pos]
-                    aa_pdb = hsp.aln[1][hsp_pos]
-                    # if aa_g != "-" and aa_pdb != "-":
-                    if aa_pdb != "-":
-                        if aa_g != "-":
-                            posmap[hsp.query_start + gpos] = hsp.hit_start + pdbpos
-                            posmap_aa[hsp.query_start + gpos] = aa_pdb
-                        else:
-                            raise Exception("There should not be any insertion")
-                    if aa_g != "-":
-                        gpos += 1
-                    if aa_pdb != "-":
-                        pdbpos += 1
-
-                gpos = 0
-                seq_pdb = ""
-                for aln_pos, aln_aa in enumerate(g.aln_seq):
-                    if aln_aa == "-":
-                        aa = "-"
-                    else:
-                        if gpos in posmap:
-                            aa = posmap_aa[gpos]
-                        else:
-                            aa = "-"
-                        gpos += 1
-                    seq_pdb = seq_pdb + aa
-
-                if seq_pdb:
-                    s.aln_seq = seq_pdb
-                    s.save()
-                    for gpos in g.positions:
-                        seq_pos = posmap[gpos.seq_pos]
-                        seq_pdb = seq_pdb[:site_pos[gpos.g_position] + 1]
-                        if s.chain in polypeps[s.pdb]:
-                            res_id = polypeps[s.pdb][s.chain][seq_pos]
-                            res_id = str(res_id.id[0]) + str(res_id.id[1])
-                            GlobinPDBPosition(pdb=s, globin_pos=gpos, pdb_res_id=res_id).save()
 
     print "ok"

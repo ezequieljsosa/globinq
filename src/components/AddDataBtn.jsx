@@ -1,5 +1,5 @@
 import React from 'react';
-
+import $ from 'jquery';
 import {Button} from 'react-bootstrap';
 import ContribEditModal from './ContribEditModal.jsx';
 import PropTypes from 'prop-types';
@@ -15,7 +15,7 @@ class AddDataBtn extends React.Component {
         fieldErrors: {"name": "", "k_on_o2_exp": "", "k_off_o2_exp": ""},
         open: false,
         model: {
-
+            ctype:this.props.ctype,
             name: "",
             k_on_o2_exp: 0,
             k_off_o2_exp: 0,
@@ -40,6 +40,7 @@ class AddDataBtn extends React.Component {
         const me = this;
         const model = this.state.model;
         model.owner = this.props.owner;
+
         const base = this.props.base;
         const fieldErrors = {};
         let error = "Some data is wrong/missing";
@@ -70,6 +71,9 @@ class AddDataBtn extends React.Component {
         model.protein = this.props.protein.id;
         model.condition = model.name;
         model.ctype = this.props.ctype;
+        model.k_on_o2_exp = parseFloat(model.k_on_o2_exp ).toString();
+        model.k_off_o2_exp = parseFloat(model.k_off_o2_exp ).toString();
+
         delete model["name"];
         const apiUrl = this.props.apiUrl;
 
@@ -111,7 +115,7 @@ class AddDataBtn extends React.Component {
     render() {
         const user = this.props.user;
         const title = this.props.title;
-
+        $(window).scrollTop(0);
 
         return <div>
 

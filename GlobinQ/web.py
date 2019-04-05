@@ -5,6 +5,7 @@ Created on Dec 30, 2016
 '''
 
 import json
+from collections import defaultdict
 import os
 import subprocess as sp
 import tempfile
@@ -18,7 +19,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from beaker.middleware import SessionMiddleware
 from bottle import hook, response, get, static_file, redirect, run, request, \
-    error, abort, post
+    error, abort, post, delete
 from gevent import monkey  # @UnresolvedImport
 from peewee import DoesNotExist, MySQLDatabase, JOIN
 
@@ -27,7 +28,9 @@ from GlobinQ.db.Model import Globin, IndexKeyword, Tax, PDB, Channel, \
     ExperimentalData, User, Contribution
 from GlobinQ.upload_globin import upload_globin
 import traceback
-
+import requests
+from Bio.SeqUtils import seq1
+from Bio.PDB.Polypeptide import is_aa,CaPPBuilder
 monkey.patch_all()
 
 
@@ -116,7 +119,8 @@ def serialize_globin(globin):
     for i in globin.insertions:
         insertions[i.g_position] = i.insertions
     exp_contributions = {x.experimental.id: x for x in
-                         Contribution.select().where(Contribution.experimental_id in globin.experimental)}
+                         Contribution.select().where(Contribution.experimental_id in globin.experimental)
+                         if not x.removed}
 
     gdict = {
         'id': globin.id,
@@ -351,10 +355,11 @@ def protein(user_id):
     except DoesNotExist:
         abort(404, "no such user")
     doc = user.to_dict()
-    doc["globins"] = [{"id":g.id,"name": g.name, "group": g.globin_group}
-                      for g in Globin.select(Globin.id,Globin.name, Globin.globin_group).where(Globin.owner == user)]
+    doc["globins"] = [{"id": g.id, "name": g.name, "group": g.globin_group}
+                      for g in Globin.select(Globin.id, Globin.name, Globin.globin_group).where(Globin.owner == user,
+                                                                                                Globin.removed == False)]
     doc["contributions"] = []
-    for c in Contribution.select().where(Contribution.user == user):
+    for c in Contribution.select().where(Contribution.user == user, Contribution.removed == False):
         data = {}
         for k, v in c.to_dict().items():
 
@@ -390,6 +395,145 @@ def upload():
     return upload_globin(postdata)
 
 
+@post("/del_contrib")
+def del_contrib():
+    data = json.loads(request.body.read())
+    c = Contribution.get_by_id(data["contrib_id"])
+    c.last_update = datetime.datetime.now()
+    c.removed = True
+    c.save()
+    return {"id": data["globin_id"]}
+
+
+@post("/add_pdb")
+def add_pdb():
+    from GlobinQ.db.update_pdb_alignments import  process_globin_structure
+
+    from Bio.PDB import PDBParser,parse_pdb_header
+    data = json.loads(request.body.read())
+    pdb = data["pdb"]
+    globin_id = data["globin"]
+    globin = Globin.get_by_id(globin_id)
+    error = ""
+
+    if pdb in [x.pdb for x in globin.structures]:
+        error = "PDB code already related to the globin"
+        return {"error": error}
+
+    try:
+
+        pdb_path = "/data/databases/pdb/divided/" + pdb[1:3] + "/pdb" + pdb + ".ent"
+        if not os.path.exists(pdb_path):
+            r = requests.get('https://files.rcsb.org/download/'  + pdb.upper() + ".pdb")
+            if r.status_code == 404:
+                error = "PDB code does not exists"
+                return {"error": error}
+            if r.status_code == 200:
+                if not os.path.exists("/data/databases/pdb/divided/" + pdb[1:3]):
+                    os.mkdir("/data/databases/pdb/divided/" + pdb[1:3])
+                with open(pdb_path,"w") as h:
+                    h.write(r.text)
+
+
+        if not os.path.exists("/tmp/globinq/"):
+            os.mkdir("/tmp/globinq/")
+        pdb_seq_path = "/tmp/globinq/" + pdb + ".fasta"
+        globin_seq_path = "/tmp/globinq/" + str(globin.id) + ".fasta"
+
+        with open(globin_seq_path, "w") as h:
+            bpio.write(SeqRecord(id=str(globin.id), name="", description="", seq=Seq(globin.sequence)), h, "fasta")
+
+        with open(pdb_seq_path, "w") as h:
+            parser = PDBParser(QUIET=True)
+            structure = parser.get_structure(pdb, pdb_path)
+            polypeps = defaultdict(lambda: {})
+
+            ppb = CaPPBuilder()
+            for chain in structure.get_chains():
+                polipep = list(ppb.build_peptides(structure[0][chain.id]))[0]
+                polypeps[pdb][chain.id] = polipep
+                seq = polipep.get_sequence()
+                if len(seq):
+                    bpio.write(SeqRecord(id=pdb + "_" + chain.id, seq=seq), h, "fasta")
+
+            # for chain in structure.get_chains():
+            #
+            #     residues = []
+            #     for x in chain.get_residues():
+            #         polypeps[]
+            #         if is_aa(x, standard=True):
+            #             residues.append(x)
+            #     if residues:
+            #         seq = "".join([seq1(x.resname) for x in residues])
+            #         # start = str(residues[0].id[1])
+            #         # end = str(residues[-1].id[1])
+            #         record = SeqRecord(id="_".join([pdb, chain.id]), seq=Seq(seq))
+            #         bpio.write(record, h, "fasta")
+
+        if not os.path.exists("/tmp/{pdb}_{globin}/".format(pdb=pdb,globin=globin.id)):
+            os.mkdir("/tmp/{pdb}_{globin}/".format(pdb=pdb,globin=globin.id))
+        result = "/tmp/{pdb}_{globin}/result.xml".format(pdb=pdb,globin=globin.id)
+        cmd = "makeblastdb -dbtype prot -in " +  pdb_seq_path
+        sp.call(cmd, shell=True)
+        cmd = "blastp -db /tmp/globinq/{pdb}.fasta -query  /tmp/globinq/{seq}.fasta -evalue 0.01 -qcov_hsp_perc 80  -outfmt 5  -max_hsps 1 > {result}"
+        sp.call(cmd.format(pdb=pdb,seq=globin.id,result=result), shell=True)
+
+        alns = defaultdict(lambda: {})
+
+        with open(pdb_path) as h:
+            header = parse_pdb_header(h)
+
+        blast_results = {q.id: q for q in bpsio.parse(result, "blast-xml")}
+        for q in blast_results.values():
+            for hit in q:
+                for hsp in hit:
+                    alns[q.id]["_".join(hit.id.split("_")[0:2])] = hsp
+
+        if alns:
+            for hit in  alns[q.id]:
+                with mysqldb.atomic():
+                    struct = PDB(globin=globin, pdb=pdb, chain=hit.split("_")[1], description=header["name"])
+                    if (("source" in header) and header["source"]
+                            and ("organism_scientific" in header["source"].values()[0])):
+                        struct.organism = header["source"].values()[0]["organism_scientific"]
+                    struct.save(force_insert=True)
+                    process_globin_structure(globin,struct,alns,polypeps,lambda g:str(g.id))
+        else:
+            error = "this globin has not any valid alignment against the selected pdb"
+
+    except Exception as ex:
+        traceback.print_exc()
+        print(ex)
+        error = "Error processing pdb..."
+
+    if error:
+        return {"error": error}
+    else:
+        return {"id": data["globin"]}
+
+
+@post("/del_globin")
+def del_globin():
+    data = json.loads(request.body.read())
+    g = Globin.get_by_id(data["globin_id"])
+    if g.owner.id == data["user_id"]:
+        Globin.update(removed=True).where(Globin.id == int(data["globin_id"])).execute()
+        return {"id": data["globin_id"]}
+    else:
+        abort(403)
+
+
+@post("/del_globin")
+def del_globin():
+    data = json.loads(request.body.read())
+    g = Globin.get_by_id(data["globin_id"])
+    if g.owner.id == data["user_id"]:
+        Globin.update(removed=True).where(Globin.id == int(data["globin_id"])).execute()
+        return {"id": data["globin_id"]}
+    else:
+        abort(403)
+
+
 @post("/addData")
 def addData():
     postdata = json.loads(request.body.read())
@@ -404,11 +548,8 @@ def addData():
                 contrib.creation = datetime.datetime.now()
             contrib.last_update = datetime.datetime.now()
 
-
             contrib.paper = postdata["paper"]
             contrib.description = postdata["description"]
-
-
 
             if contrib.ctype == "exp":
                 if "id" in postdata:
@@ -416,9 +557,9 @@ def addData():
                 else:
                     exp = ExperimentalData(globin=Globin.get_by_id(int(postdata["protein"])))
 
-                exp.k_on_o2_exp=float(postdata["k_on_o2_exp"])
-                exp.k_off_o2_exp=float(postdata["k_off_o2_exp"])
-                exp.sequence_red=postdata["condition"]
+                exp.k_on_o2_exp = float(postdata["k_on_o2_exp"])
+                exp.k_off_o2_exp = float(postdata["k_off_o2_exp"])
+                exp.sequence_red = postdata["condition"]
 
                 exp.save()
                 contrib.experimental = exp
@@ -444,11 +585,13 @@ def addData():
 @post("/login")
 def login():
     credentials = json.loads(request.body.read())
+
     user = list(User.select().where(
         (User.email == str(credentials["email"])) &
         (User.password == str(credentials["password"]))))
     if user:
         user = user[0]
+        save_session_var("user", user.id)
         return {"name": user.name, "email": user.email, "id": user.id,
                 "institution": user.institution}
     else:

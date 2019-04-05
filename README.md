@@ -1,4 +1,5 @@
 http://stackoverflow.com/questions/14381898/local-dependency-in-package-json
+https://ourcodeworld.com/articles/read/528/how-to-use-components-of-bootstrap-3-in-reactjs
 
 Create config
 * copy globinq.config.templ to globinq.config

@@ -12,8 +12,8 @@ const ExperimentalData = ({idx, model, updateInputValue, errors}) => {
             name={"name" + ((idx !== "") ? "_" : "") + idx.toString()} value={model.name} error={errors["name"]}
             placeholder="WT or Mutant short description" updateInputValue={updateInputValue}/>
 
-        <FormField
-            label={kon} name="k_on_o2_exp" value={model.k_on_o2_exp} error={errors["k_on_o2_exp"]}
+        <FormField 
+                   label={kon} name="k_on_o2_exp" value={model.k_on_o2_exp} error={errors["k_on_o2_exp"]}
             placeholder="kon" updateInputValue={updateInputValue}/>
 
         <FormField

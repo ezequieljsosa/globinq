@@ -3,18 +3,23 @@ import {Grid, Row, Col, Button, Table} from 'react-bootstrap';
 import {Link} from 'react-router-dom';
 
 import Modal from 'react-modal';
-import FormField from '../components/FormField.jsx';
+
 import ContribEditModal from '../components/ContribEditModal.jsx';
 
 function isFloat(n) {
-    return !isNaN(parseFloat(n))
+    return !isNaN(parseFloat(n));
 }
+
+const kon = <span>Kon O<sup>2</sup>  [M<sup>-1</sup>s<sup>-1</sup>]  </span>;
+const koff = <span>Koff O<sup>2</sup>  [s<sup>-1</sup>]  </span>;
 
 class User extends React.Component {
 
     state = {
         yesNoContribOpen: false,
         yesNoGlobinOpen: false,
+        yesNoGlobinDisabled:false,
+        yesNoContribDisabled:false,
         fieldErrors: {},
         contribModel: {},
         openContrib: false
@@ -22,12 +27,65 @@ class User extends React.Component {
 
     deleteGlobin = () => {
         const apiUrl = this.props.apiUrl;
-        this.yesNoGlobinClose();
+
+
+
+        const me = this;
+        this.setState({yesNoGlobinDisabled: true});
+
+
+        fetch(apiUrl + 'del_globin', {
+            method: 'post',
+            headers: new Headers(),
+            body: JSON.stringify({
+                globin_id: this.state.selected.id,user_id:me.props.user.id
+            })
+        }).then((res) => res.json())
+            .then((data) => {
+                if (data.id) {
+                    me.setState({yesNoGlobinDisabled: false});
+                    window.location = "/user/" + me.props.user.id;
+                } else {
+                    me.setState({yesNoGlobinDisabled: false, error: data.error});
+                }
+                this.yesNoGlobinClose();
+            })
+            .catch((err) => {
+                me.setState({yesNoGlobinDisabled: false});
+                console.log(err);
+                this.yesNoGlobinClose();
+            });
+
     };
 
     deleteContrib = () => {
         const apiUrl = this.props.apiUrl;
-        this.yesNoContribClose();
+        const me = this;
+        this.setState({yesNoContribDisabled: true});
+
+
+        fetch(apiUrl + 'del_contrib', {
+            method: 'post',
+            headers: new Headers(),
+            body: JSON.stringify({
+                contrib_id: this.state.selected.id,
+                globin_id: this.state.selected.experimental.globin
+            })
+        }).then((res) => res.json())
+            .then((data) => {
+                if (data.id) {
+                    me.setState({yesNoContribDisabled: false});
+                    window.location = "/protein/" + data.id;
+                } else {
+                    me.setState({yesNoContribDisabled: false, error: data.error});
+                }
+                this.yesNoContribClose();
+            })
+            .catch((err) => {
+                me.setState({yesNoContribDisabled: false});
+                console.log(err);
+                this.yesNoContribClose();
+            });
     };
 
     yesNoContribClose = () => {
@@ -51,16 +109,24 @@ class User extends React.Component {
         this.setState({openContrib: true, fieldErrors: {}, contribModel: contrib});
     };
     openYesNoContrib = (contrib) => {
-        this.setState({yesNoContribOpen: true});
+        this.setState({yesNoContribOpen: true, selected: contrib});
     };
-    openYesNoGlobin = (contrib) => {
-        this.setState({yesNoGlobinOpen: true});
+    openYesNoGlobin = (globin) => {
+        this.setState({yesNoGlobinOpen: true,selected:globin});
     };
 
     updateInputValue = (control, value) => {
         const model = this.state.contribModel;
+        const new_val = value.split(model[control])[1];
         model[control] = value;
-        this.setState({'contribModel': model});
+        if ((control === "k_on_o2_exp") || (control === "k_off_o2_exp")) {
+            if (new_val.match(/[e\,\.\-\d]/)) {
+
+                this.setState({'contribModel': model});
+            }
+        } else {
+            this.setState({'contribModel': model});
+        }
     };
 
     updateData = () => {
@@ -73,10 +139,10 @@ class User extends React.Component {
         let error = "Some data is wrong/missing";
 
 
-        if ((model.k_on_o2_exp !== "") && !isFloat(model.k_on_o2_exp)) {
+        if (((model.k_on_o2_exp !== "") && !isFloat(model.k_on_o2_exp)) || parseFloat(model.k_on_o2_exp) < 0) {
             fieldErrors["k_on_o2_exp"] = "invalid value";
         }
-        if ((model.k_off_o2_exp !== "") && !isFloat(model.k_off_o2_exp)) {
+        if (((model.k_off_o2_exp !== "") && !isFloat(model.k_off_o2_exp)) || parseFloat(model.k_off_o2_exp) < 0) {
             fieldErrors["k_off_o2_exp"] = "invalid value";
         }
 
@@ -84,7 +150,7 @@ class User extends React.Component {
             fieldErrors["name"] = "Experimental conditions must have at least 2 characters long";
         }
 
-        if ((this.props.ctype == "pdb") && (model.pdb.length != 4)) {
+        if ((this.props.ctype === "pdb") && (model.pdb.length !== 4)) {
             fieldErrors["pdb"] = "PDBs has a 4 letter code";
         }
 
@@ -95,6 +161,8 @@ class User extends React.Component {
 
         this.setState({disabled: true});
         model.user = this.props.user.id;
+        model.k_on_o2_exp = parseFloat(model.k_on_o2_exp).toString();
+        model.k_off_o2_exp = parseFloat(model.k_off_o2_exp).toString();
         model.condition = model.name;
         model.ctype = this.props.ctype;
         delete model["name"];
@@ -141,18 +209,35 @@ class User extends React.Component {
         return <Grid>
 
             <Row>
-                <Col md={12}>{contributions ? <h1>Contributions</h1> : <h3>You made no contributions yet</h3>} </Col>
+                <Col md={12}>{(contributions.length > 0) ? <h1>Contributions</h1> : <h3>You made no experimental contributions yet</h3>} </Col>
             </Row>
             <Row>
                 <Col md={12}>
                     <Table striped bordered hover>
                         {contributions.map((c, i) => <tr key={i}>
-                                <td><Button onClick={this.openYesNoContrib} bsStyle="danger">Delete</Button>
+                                <td><Button onClick={() => this.openYesNoContrib(c)} bsStyle="danger">Delete</Button>
                                     <Button bsStyle="info" onClick={() => this.openContrib(c)}>Update</Button>
                                 </td>
                                 <td>
                                     <Link
                                         to={"/protein/" + c.experimental.globin.toString()}>{c.experimental.globin_name}</Link>
+                                    <br/>
+                                    {c.experimental.k_on_o2_exp &&  c.experimental.k_on_o2_exp > 0 &&
+                                        <div>
+                                        {c.experimental.k_on_o2_exp.toExponential(2).toString() + " "}
+                                        {kon}
+                                        </div>
+                                    }
+                                    {c.experimental.k_off_o2_exp &&  c.experimental.k_off_o2_exp > 0 &&
+                                    <div>
+                                        {c.experimental.k_off_o2_exp.toExponential(2).toString() + " "}
+                                        {koff}
+                                    </div>
+                                    }
+
+
+
+
                                 </td>
                                 <td>{c.paper} </td>
                                 <td style={{maxWidth: "500px"}}>{c.description} </td>
@@ -162,10 +247,10 @@ class User extends React.Component {
                 </Col>
             </Row>
             <Row>
-                {globins ? <Col md={12}><h1>Globins</h1></Col> : <h3>You uploaded no globins yet</h3>}
+                <Col md={12}> {(globins.length > 0)  ?<h1>Globins</h1> : <h3>You uploaded no globins yet</h3>}</Col>
             </Row>
             {globins.map((g, i) => <Row key={i}>
-                    <Col md={12}><Button onClick={this.openYesNoGlobin}
+                    <Col md={12}><Button onClick={() => this.openYesNoGlobin(g)}
                                          bsStyle="danger">Delete</Button> <Link
                         to={"/protein/" + g.id.toString()}> {g.name} </Link> ({g.group})</Col>
 
@@ -178,8 +263,9 @@ class User extends React.Component {
                    contentLabel="Are you sure?">
                 <h3>Are you sure?</h3>
 
-                <Button onClick={this.yesNoGlobinClose}>Close</Button>
-                <Button onClick={this.deleteGlobin}>Save</Button>
+                <Button disabled={this.state.yesNoGlobinDisabled} onClick={this.yesNoGlobinClose}>Close</Button>
+                <Button bsStyle="danger" disabled={this.state.yesNoGlobinDisabled}
+                        onClick={this.deleteGlobin}>Yes</Button>
             </Modal>
 
             <Modal isOpen={this.state.yesNoContribOpen}
@@ -187,15 +273,19 @@ class User extends React.Component {
                    contentLabel="Are you sure?">
                 <h3>Are you sure?</h3>
 
-                <Button onClick={this.yesNoContribClose}>Close</Button>
-                <Button onClick={this.deleteContrib}>Save</Button>
+                <Button disabled={this.state.yesNoContribDisabled} onClick={this.yesNoContribClose}>Close</Button>
+                <Button bsStyle="danger" disabled={this.state.yesNoContribDisabled}
+                        onClick={this.deleteContrib}>Yes</Button>
             </Modal>
 
             <ContribEditModal open={this.state.openContrib} model={this.state.contribModel}
                               updateInputValue={this.updateInputValue} onClose={this.closeContrib}
                               onSave={this.updateData}
-                              fieldErrors={this.state.fieldErrors} />
+                              fieldErrors={this.state.fieldErrors}/>
 
+            <Row>
+                <Col  md={12}><hr /></Col>
+            </Row>
         </Grid>
     }
 }

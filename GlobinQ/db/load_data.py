@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 from GlobinQ.db import mysql_db, reduced_code, sites, site_pos
 from GlobinQ.db.Model import Tax, Globin, Channel, PDB, GlobinPosition, \
-    IndexKeyword, GlobinPDBPosition, ExperimentalData, PosInsertion, User,
+    IndexKeyword, GlobinPDBPosition, ExperimentalData, PosInsertion, User,Contribution
 
 pdbl = PDBList(pdb="/data/databases/pdb/divided/")
 
@@ -29,11 +29,11 @@ mysqldb = MySQLDatabase('globinq', user=config["mysql"]["user"], password=config
 mysql_db.initialize(mysqldb)
 
 for x in reversed(
-        [Channel, User, Globin, ExperimentalData, PDB, GlobinPosition, IndexKeyword, GlobinPDBPosition, PosInsertion]):
+        [Contribution,Channel, User, Globin, ExperimentalData, PDB, GlobinPosition, IndexKeyword, GlobinPDBPosition, PosInsertion]):
     if x.table_exists():
         x.drop_table()
 
-for x in [Channel, User, Globin, ExperimentalData, PDB, GlobinPosition, IndexKeyword, GlobinPDBPosition, PosInsertion]:
+for x in [Channel, User, Globin, ExperimentalData, PDB, GlobinPosition, IndexKeyword, GlobinPDBPosition, PosInsertion,Contribution]:
     print x
     x.create_table()
 
