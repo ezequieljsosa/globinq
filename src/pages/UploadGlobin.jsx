@@ -211,7 +211,7 @@ class UploadGlobin extends React.Component {
 
                 <h2>Experimental</h2>
                 <FormField
-                    label="P50" name="p50" value={this.state.model.p50}
+                    label="p50" name="p50" value={this.state.model.p50}
                     error={this.state.fieldErrors["p50"]}
                     placeholder="p50" updateInputValue={this.updateInputValue}/>
 

@@ -13,6 +13,8 @@ import {
 import {Redirect} from 'react-router';
 import Select from "./Select";
 
+
+
 const SearchText = ({value, inputUpdated, navigate}) => (
     <div><FormControl id="searchTxt" onKeyDown={(event) => (event.keyCode === 13) ? navigate() : null} type="text" value={value}
                       onChange={(evt) => {
@@ -34,6 +36,7 @@ const site_search = {
     "STG8": "g8",
     "AS": "sa"
 };
+const site_names = {"lt": 'Long tunnel', "e7": 'E7G', "g8": 'Short Tunnel G8', "sa": 'Active site'}
 
 
 //const data = {
@@ -91,11 +94,11 @@ class SearchBox extends React.Component {
         redirect: false,
         noncurated: false,
         with_exp: false,
-        selected_site: "LT",
-        selected_pos: "B2",
+        selected_site: "AS",
+        selected_pos: "B10",
         site_filters: []
 
-    }
+    };
 
     inputUpdated = (value) => {
         this.setState({'kw': value});
@@ -108,35 +111,35 @@ class SearchBox extends React.Component {
 
     toogleAdvanced = () => {
         this.setState({advanced: !this.state.advanced});
-    }
+    };
 
     updateSearch = () => {
 
         let search = "search?kw=" + this.state.kw;
 
-        if (this.state.advanced & this.state.k_on_checked) {
+        if (this.state.advanced && this.state.k_on_checked) {
             search += `&kon_start=${this.state.kon_start}&kon_end=${this.state.kon_end}`
         }
-        if (this.state.advanced & this.state.k_off_checked) {
+        if (this.state.advanced && this.state.k_off_checked) {
             search += `&koff_start=${this.state.koff_start}&koff_end=${this.state.koff_end}`
         }
 
-        if (this.state.advanced & this.state.p50_checked) {
+        if (this.state.advanced && this.state.p50_checked) {
             search += `&p50_min=${this.state.p50_min}&p50_max=${this.state.p50_max}`
         }
-        if (this.state.advanced & (this.state.g_p
+        if (this.state.advanced && (this.state.g_p
                 | this.state.g_n | this.state.g_o
                 | this.state.g_q | this.state.g_x
             )) {
             search += `&groups=p_${this.state.g_p},n_${this.state.g_n},o_${this.state.g_o},q_${this.state.g_q},x_${this.state.g_x}`
         }
-        if (this.state.advanced & this.state.only_struct) {
+        if (this.state.advanced && this.state.only_struct) {
             search += `&only_struct=1`
         }
-        if (this.state.advanced & this.state.noncurated) {
+        if (this.state.advanced && this.state.noncurated) {
             search += `&noncurated=1`
         }
-        if (this.state.advanced & this.state.with_exp) {
+        if (this.state.advanced && this.state.with_exp) {
             search += `&with_exp=1`
         }
         const site_filters = this.state.site_filters;
@@ -210,6 +213,8 @@ class SearchBox extends React.Component {
                 {this.state.advanced && <Grid>
                     <Row>
                         <Col xs={9}>
+                            <br />
+
                             <InputGroup>
                                 <InputGroup.Addon>{this.state.kon_start.toExponential(2)}</InputGroup.Addon>
 
@@ -220,7 +225,7 @@ class SearchBox extends React.Component {
                                 <InputGroup.Addon>{this.state.kon_end.toExponential(2)}</InputGroup.Addon>
                                 <InputGroup.Addon>Kon range[ M<sup>−1</sup>s<sup>−1</sup>]</InputGroup.Addon>
                                 <InputGroup.Addon> <input
-                                    name="P50"
+                                    name="p50"
                                     type="checkbox"
                                     checked={this.state.k_on_checked}
                                     onChange={(event) => this.setState({k_on_checked: event.target.checked})}/></InputGroup.Addon>
@@ -262,9 +267,9 @@ class SearchBox extends React.Component {
                                            })}/>
                                 </div>
                                 <InputGroup.Addon>{this.state.p50_max && this.state.p50_max.toFixed(4)}</InputGroup.Addon>
-                                <InputGroup.Addon>P50 range </InputGroup.Addon>
+                                <InputGroup.Addon>p50 range </InputGroup.Addon>
                                 <InputGroup.Addon> <input
-                                    name="P50"
+                                    name="p50"
                                     type="checkbox"
                                     checked={this.state.p50_checked}
                                     onChange={(event) => this.setState({p50_checked: event.target.checked})}/></InputGroup.Addon>
@@ -273,51 +278,53 @@ class SearchBox extends React.Component {
                     </Row>
                     <Row>
                         <Col xs={9}>
+                            <br />
                             <b> Groups: </b>
 
-                            P <input
-                            name="g_p"
-                            type="checkbox"
-                            checked={this.state.g_p}
-                            onChange={(event) => this.setState({g_p: event.target.checked})}/>
-                            &#160;&#160;&#160;
                             N <input
                             name="g_n"
                             type="checkbox"
                             checked={this.state.g_n}
                             onChange={(event) => this.setState({g_n: event.target.checked})}/>
                             &#160;&#160;&#160;
+
                             O <input
                             name="g_o"
                             type="checkbox"
                             checked={this.state.g_o}
                             onChange={(event) => this.setState({g_o: event.target.checked})}/>
+
                             &#160;&#160;&#160;
-                            Q <input
+                            P <input
+                            name="g_p"
+                            type="checkbox"
+                            checked={this.state.g_p}
+                            onChange={(event) => this.setState({g_p: event.target.checked})}/>
+
+
+                            &#160;&#160;&#160;
+                            Q  <input
                             name="g_q"
                             type="checkbox"
                             checked={this.state.g_q}
                             onChange={(event) => this.setState({g_q: event.target.checked})}/>
-                            &#160;&#160;&#160;
-                            X <input
-                            name="g_x"
-                            type="checkbox"
-                            checked={this.state.g_x}
-                            onChange={(event) => this.setState({g_x: event.target.checked})}/>
+                            <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004701">
+                            <sup title="Q is a new group according Bustamante 2015 et al., let’s click on it to download the PDF article.">?</sup></a>
+
                             <br/>
-                            Only with Structure <input
+                            Only with PDB structure(s).<input
                             name="with_structure"
                             type="checkbox"
                             checked={this.state.only_struct}
                             onChange={(event) => this.setState({only_struct: event.target.checked})}/>
                             <br/>
-                            Only with experimental data <input
+                            Only with experimental kinetic data. <input
                             name="with_exp"
                             type="checkbox"
                             checked={this.state.with_exp}
                             onChange={(event) => this.setState({with_exp: event.target.checked})}/>
                             <br/>
-                            Search also in non curated data <input
+                            Search also in non curated data (globins uploaded by users) <input
                             name="noncurated"
                             type="checkbox"
                             checked={this.state.noncurated}
@@ -332,15 +339,15 @@ class SearchBox extends React.Component {
                             <thead>
                             <tr>
                                 <th>Site</th>
-                                <th>Position</th>
-                                <th>Value</th>
-                                <th>-</th>
+                                <th> Structural position</th>
+                                <th>AA (one letter code)</th>
+                                <th></th>
                             </tr>
                             <tr>
                                 <td><Select onChange={x => this.setState({selected_site: x, selected_pos: sites[x][0]})}
                                             value={this.state.selected_site}
                                             options={Object.keys(sites).map(x => {
-                                                return {value: x, label: x}
+                                                return {value: x, label: x +site_names[x] }
                                             })}/></td>
                                 <td><Select
                                     onChange={x => this.setState({selected_pos: x})}

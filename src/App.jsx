@@ -26,36 +26,35 @@ import {instanceOf} from 'prop-types';
 
 import {BrowserRouter as Router, Link, Route, withRouter} from 'react-router-dom'
 //https://react-bootstrap.github.io/components.html
-import {Nav, Navbar, NavItem} from 'react-bootstrap';
+import {Nav, Navbar, NavItem, Button} from 'react-bootstrap';
 
 
 const Header = ({base, logged, logout}) => (
 
-    <Navbar>
+    <Navbar  bsStyle={"reversed"}>
         <Navbar.Header>
             <Navbar.Brand>
                 <Link to={base}>GlobinQ</Link>
             </Navbar.Brand>
         </Navbar.Header>
         <Nav>
-            <NavItem eventKey={1}><Link to={base + "methodology"}>Methodology</Link></NavItem>
-            <NavItem eventKey={1}><Link to={base + "global"}>Data </Link></NavItem>
-            <NavItem eventKey={1}><Link to={base + "statistics"}>AA Distributions </Link></NavItem>
-            {/*<NavItem eventKey={2}><Link to={base + "userguide"}>User Guide</Link></NavItem>*/}
             <NavItem eventKey={3}><Link to={base + "tutorial"}>Interactive Tutorials</Link></NavItem>
-            <NavItem eventKey={3}><Link to={base + "downloads"}>Downloads</Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "global"}>Analyzed Data </Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "statistics"}>AA distributions </Link></NavItem>
             {(logged) ?
                 <NavItem eventKey={3}><Link to={base + "upload"}>Upload My Globin</Link></NavItem>
                 : <NavItem eventKey={3} disabled="" >Upload Globin(Register First)</NavItem>}
 
-
-            <NavItem eventKey={4}><Link to={base + "about"}>About</Link></NavItem>
-            {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base}>Logout</Link></NavItem> :
-                <NavItem eventKey={5}><Link to={base + "login"}>Login</Link></NavItem>
-            }
+            <NavItem eventKey={3}><Link to={base + "downloads"}>Downloads</Link></NavItem>
             {logged && <NavItem eventKey={6}><Link to={base + "user/"  + logged.id.toString()}>My Data</Link></NavItem> }
-
-
+            <NavItem eventKey={1}><Link to={base + "methodology"}>Methodology</Link></NavItem>
+            <NavItem eventKey={4}><Link to={base + "about"}>About us</Link></NavItem>
+            {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base}><Button bsStyle={"success"}>Sign Out</Button></Link></NavItem> :
+                <NavItem eventKey={5}>  <Link to={base + "login"}><Button bsStyle={"success"}> Sign in </Button></Link></NavItem>
+            }
+            {!logged ? <NavItem eventKey={4} onClick={logout}><Button bsStyle={"success"}>Sign Out</Button></NavItem> :
+                <NavItem eventKey={5}>  <Link to={base + "login"}><Button bsStyle={"success"}> Sign up </Button></Link></NavItem>
+            }
 
         </Nav>
 

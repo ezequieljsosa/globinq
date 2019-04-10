@@ -1,13 +1,17 @@
 import React from 'react';
 import {  Grid, Row, Col } from 'react-bootstrap';
-const About = ( props ) => (
+const About = (  ) => (
         <Grid>
         <Row>
             <Col md={12}>
 
                 <img src="logoiquibicen.svg" />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <img src="ibb-logo-x-300.jpg" />
+            <br />
 
-                <h2>Authors:</h2>
+
+
          <ul>
             <li>Sosa, Ezequiel </li>
             <li>Boechi, Leonardo</li>

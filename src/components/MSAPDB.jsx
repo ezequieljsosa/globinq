@@ -61,7 +61,7 @@ class MSAPDB extends React.Component {
             overviewbox: false,
             seqlogo: false,
         };
-        opts.colorscheme = {}
+        opts.colorscheme = {};
         opts.zoomer = {
             boxRectHeight: 1,
             boxRectWidth: 1,
@@ -80,8 +80,8 @@ class MSAPDB extends React.Component {
     selectPos = ( pos ) => {
         
         const sel = new ColumnSelection( {xStart: pos, xEnd: pos} );
-        this.m.g.selcol.add( sel)
-        this.m.g.zoomer.setLeftOffset( (pos - 25) > 0 ? (pos - 25) : 0 )
+        this.m.g.selcol.add( sel);
+        this.m.g.zoomer.setLeftOffset( (pos - 25) > 0 ? (pos - 25) : 0 );
 
 
     }
