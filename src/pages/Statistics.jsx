@@ -20,7 +20,8 @@ class Statistics extends React.Component {
             "g8": ["G8", "G9", "H9"],
 
         };
-        const site_names = {"lt": 'long tunnel', "e7": 'E7G', "g8": 'Short Tunnel G8', "sa": 'active site'}
+        const site_codes = {"lt":"LT", "e7": "E7G", "g8": "STG8", "sa": "AS"};
+        const site_names = {"lt": 'Long tunnel', "e7": 'Short Tunnel E7 myoglobin-like gate', "g8": 'Short Tunnel G8', "sa": 'Active site'};
 
         return <Grid>
             <Row>
@@ -33,7 +34,7 @@ class Statistics extends React.Component {
                         <br/>
                         <br/>
                         {/*<GlobinTree id={"tree" + gg + site} group={gg} />*/}
-                        <h3>Group <b>{gg}</b> <b>{site_names[site]}</b> sequence abundances</h3>
+                        <h3>Group <b>{gg}</b>, {site_codes[site]}  ({site_names[site]}) sequence abundances</h3>
 
                         <SequenceAbundance key={gg + site} group={gg} site={site} positions={sites[site]}/>
 

@@ -55,8 +55,8 @@ def process_globin_structure(g,s,alns,polypeps,gid=lambda g:g.aln_id):
             if aa_g != "-":
                 posmap[hsp.query_start + gpos] = hsp.hit_start + pdbpos
                 posmap_aa[hsp.query_start + gpos] = aa_pdb
-            else:
-                raise Exception("There should not be any insertion")
+            # else:
+            #     raise Exception("There should not be any insertion")
         if aa_g != "-":
             gpos += 1
         if aa_pdb != "-":
@@ -79,12 +79,13 @@ def process_globin_structure(g,s,alns,polypeps,gid=lambda g:g.aln_id):
         s.aln_seq = seq_pdb
         s.save()
         for gpos in g.positions:
-            seq_pos = posmap[gpos.seq_pos]
-            seq_pdb = seq_pdb[:site_pos[gpos.g_position] + 1]
-            if s.chain in polypeps[s.pdb]:
-                res_id = polypeps[s.pdb][s.chain][seq_pos]
-                res_id = str(res_id.id[0]) + str(res_id.id[1])
-                GlobinPDBPosition(pdb=s, globin_pos=gpos, pdb_res_id=res_id).save()
+            if gpos.seq_pos in posmap:
+                seq_pos = posmap[gpos.seq_pos]
+                seq_pdb = seq_pdb[:site_pos[gpos.g_position] + 1]
+                if s.chain in polypeps[s.pdb]:
+                    res_id = polypeps[s.pdb][s.chain][seq_pos]
+                    res_id = str(res_id.id[0]) + str(res_id.id[1])
+                    GlobinPDBPosition(pdb=s, globin_pos=gpos, pdb_res_id=res_id).save()
 
 if __name__ == '__main__':
 

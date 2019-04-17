@@ -31,30 +31,31 @@ import {Nav, Navbar, NavItem, Button} from 'react-bootstrap';
 
 const Header = ({base, logged, logout}) => (
 
-    <Navbar  bsStyle={"reversed"}>
+    <Navbar sticky="top"  bsStyle={"inverse" }>
         <Navbar.Header>
             <Navbar.Brand>
                 <Link to={base}>GlobinQ</Link>
             </Navbar.Brand>
         </Navbar.Header>
         <Nav>
-            <NavItem eventKey={3}><Link to={base + "tutorial"}>Interactive Tutorials</Link></NavItem>
-            <NavItem eventKey={1}><Link to={base + "global"}>Analyzed Data </Link></NavItem>
-            <NavItem eventKey={1}><Link to={base + "statistics"}>AA distributions </Link></NavItem>
+            <NavItem eventKey={3}><Link to={base + "tutorial"} style={{color:"white"}}>Interactive <br /> Tutorials</Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "global"} style={{color:"white"}}>Analyzed <br />Data </Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "statistics"} style={{color:"white"}}>AA distributions </Link></NavItem>
             {(logged) ?
-                <NavItem eventKey={3}><Link to={base + "upload"}>Upload My Globin</Link></NavItem>
-                : <NavItem eventKey={3} disabled="" >Upload Globin(Register First)</NavItem>}
+                <NavItem eventKey={3}><Link to={base + "upload"} style={{color:"white"}}>Upload <br />My Globin</Link></NavItem>
+                : <NavItem eventKey={3} disabled="" >Upload Globin</NavItem>}
 
-            <NavItem eventKey={3}><Link to={base + "downloads"}>Downloads</Link></NavItem>
-            {logged && <NavItem eventKey={6}><Link to={base + "user/"  + logged.id.toString()}>My Data</Link></NavItem> }
-            <NavItem eventKey={1}><Link to={base + "methodology"}>Methodology</Link></NavItem>
-            <NavItem eventKey={4}><Link to={base + "about"}>About us</Link></NavItem>
-            {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base}><Button bsStyle={"success"}>Sign Out</Button></Link></NavItem> :
-                <NavItem eventKey={5}>  <Link to={base + "login"}><Button bsStyle={"success"}> Sign in </Button></Link></NavItem>
+            <NavItem eventKey={3}><Link to={base + "downloads"} style={{color:"white"}}>Downloads</Link></NavItem>
+            {/*{logged && <NavItem eventKey={6}><Link to={base + "user/"  + logged.id.toString()} style={{color:"white"}}>My Data</Link></NavItem> }*/}
+            <NavItem eventKey={1}><Link to={base + "methodology"} style={{color:"white"}}>Methodology</Link></NavItem>
+            <NavItem eventKey={4}><Link to={base + "about"} style={{color:"white"}}>About us</Link></NavItem>
+
+            {!logged && <NavItem eventKey={4} onClick={logout}>
+                    <Link to={base + "register"} style={{color:"white"}}>Sign up</Link></NavItem>   }
+            {logged ? <NavItem eventKey={4} onClick={logout}><Link to={base} style={{color:"white"}}><Button bsStyle={"primary"}>Sign out</Button></Link></NavItem> :
+                <NavItem eventKey={5}>  <Link to={base + "login"} style={{color:"white"}}><Button bsStyle={"primary"}> Sign in </Button></Link></NavItem>
             }
-            {!logged ? <NavItem eventKey={4} onClick={logout}><Button bsStyle={"success"}>Sign Out</Button></NavItem> :
-                <NavItem eventKey={5}>  <Link to={base + "login"}><Button bsStyle={"success"}> Sign up </Button></Link></NavItem>
-            }
+            {logged && <NavItem><Link to={base + "user/"  + logged.id.toString()}> <b style={{color:"white"}}> {logged.name} </b> </Link></NavItem>}
 
         </Nav>
 

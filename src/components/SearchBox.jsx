@@ -24,19 +24,21 @@ const SearchText = ({value, inputUpdated, navigate}) => (
 );
 
 const sites = {
+    "AS": ["B10", "CD1", "E7", "E11", "G8"],
     "LT": ["B2", "E11", "E15", "G8", "H5", "H9"],
     "E7G": ["B10", "CD1", "E7", "E11"],
     "STG8": ["G8", "G9", "H9"],
-    "AS": ["B10", "CD1", "E7", "E11", "G8"]
+
 };
 
 const site_search = {
+    "AS": "sa",
     "LT": "lt",
     "E7G": "e7",
     "STG8": "g8",
-    "AS": "sa"
+
 };
-const site_names = {"lt": 'Long tunnel', "e7": 'E7G', "g8": 'Short Tunnel G8', "sa": 'Active site'}
+const site_names = {"LT": 'Long tunnel', "E7G": 'Short Tunnel E7 myoglobin-like gate', "STG8": 'Short Tunnel G8', "AS": 'Active site'};
 
 
 //const data = {
@@ -223,7 +225,7 @@ class SearchBox extends React.Component {
                                            onChange={this.changeKon}/>
                                 </div>
                                 <InputGroup.Addon>{this.state.kon_end.toExponential(2)}</InputGroup.Addon>
-                                <InputGroup.Addon>Kon range[ M<sup>−1</sup>s<sup>−1</sup>]</InputGroup.Addon>
+                                <InputGroup.Addon>k<sub>on</sub> range[ M<sup>−1</sup>s<sup>−1</sup>]</InputGroup.Addon>
                                 <InputGroup.Addon> <input
                                     name="p50"
                                     type="checkbox"
@@ -242,7 +244,7 @@ class SearchBox extends React.Component {
                                            onChange={this.changeKoff}/>
                                 </div>
                                 <InputGroup.Addon>{this.state.koff_end.toExponential(2)}</InputGroup.Addon>
-                                <InputGroup.Addon>Koff range[s<sup>−1</sup>]</InputGroup.Addon>
+                                <InputGroup.Addon>k<sub>off</sub> range[s<sup>−1</sup>]</InputGroup.Addon>
                                 <InputGroup.Addon> <input
                                     name="Koff"
                                     type="checkbox"
@@ -312,13 +314,13 @@ class SearchBox extends React.Component {
                             <sup title="Q is a new group according Bustamante 2015 et al., let’s click on it to download the PDF article.">?</sup></a>
 
                             <br/>
-                            Only with PDB structure(s).<input
+                            Only with PDB structure(s)<input
                             name="with_structure"
                             type="checkbox"
                             checked={this.state.only_struct}
                             onChange={(event) => this.setState({only_struct: event.target.checked})}/>
                             <br/>
-                            Only with experimental kinetic data. <input
+                            Only with experimental kinetic data <input
                             name="with_exp"
                             type="checkbox"
                             checked={this.state.with_exp}
@@ -338,16 +340,16 @@ class SearchBox extends React.Component {
                         <Table striped bordered condensed hover>
                             <thead>
                             <tr>
-                                <th>Site</th>
+                                <th width="200px">Site</th>
                                 <th> Structural position</th>
                                 <th>AA (one letter code)</th>
                                 <th></th>
                             </tr>
                             <tr>
-                                <td><Select onChange={x => this.setState({selected_site: x, selected_pos: sites[x][0]})}
+                                <td><Select width={"100%"} onChange={x => this.setState({selected_site: x, selected_pos: sites[x][0]})}
                                             value={this.state.selected_site}
                                             options={Object.keys(sites).map(x => {
-                                                return {value: x, label: x +site_names[x] }
+                                                return {value: x, label: x + " (" + site_names[x] + ")" }
                                             })}/></td>
                                 <td><Select
                                     onChange={x => this.setState({selected_pos: x})}

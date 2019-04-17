@@ -152,7 +152,42 @@ class DataAnalysis extends React.Component {
                     m.seqs.reset(seqs);
                     m.render();
                     m.g.zoomer.setLeftOffset(203);
-                    $("span:contains('Label')").html("Find your desired globin");
+
+                    const search_button = $("<button />").css("font-size", "14px").html("Find your desired globin");
+                    search_button.click(() => {
+                        const globin = prompt("Enter globin name or keyword");
+                        if (globin) {
+
+                            const filtered = m.seqs.filter((seq) => seq.attributes.name.toLowerCase().includes(globin.toLowerCase()));
+                            m.g.zoomer.setTopOffset(m.seqs.indexOf(filtered[0]));
+                            if (filtered.length > 1) {
+                                $("#next_prot").show().val(filtered.splice(1).map(x => m.seqs.indexOf(x).toString()).join(" "));
+
+                            } else {
+                                $("#next_prot").hide();
+                            }
+                        }
+
+
+                    });
+                    const next_button = $("<button />", {
+                        id: "next_prot"
+                    }).css("font-size", "14px").html("Next");
+                    next_button.click(() => {
+                        const nums = $("#next_prot").val().split(" ").map(x => parseInt(x, 10));
+                        m.g.zoomer.setTopOffset(nums[0]);
+                        if (nums.length > 1) {
+                            $("#next_prot").show().val(nums.splice(1).map(x => x.toString()).join(" "));
+                        } else {
+                            $("#next_prot").hide();
+                        }
+                    });
+
+
+                    $("span:contains('Label')").html("").append(search_button).append(next_button);
+                    next_button.hide();
+
+
                 });
 
 
@@ -214,8 +249,9 @@ class DataAnalysis extends React.Component {
 
             <Row>
                 <Col md={12}>
-                    <br />
-                    <br />
+                    <br/>
+                    <br/>
+
                     <h1 id="tree_title">Tree
                     </h1>
 
@@ -231,8 +267,8 @@ class DataAnalysis extends React.Component {
                                 <td style={{width: 50, backgroundColor: "red"}}></td>
                             </tr>
                         </table>
-                        <br />
-                        <br />
+                        <br/>
+                        <br/>
                         <table>
                             <tr>
                                 <td>N Group</td>
@@ -252,7 +288,7 @@ class DataAnalysis extends React.Component {
                             </tr>
                         </table>
                     </div>
-                    <div style={{height: 1000, position: "absolute", top: "-20px"}} id="tree">
+                    <div style={{height: 1000, position: "absolute", top: "50"}} id="tree">
 
 
                     </div>

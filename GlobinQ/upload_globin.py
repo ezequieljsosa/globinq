@@ -8,13 +8,16 @@ import Bio.SeqIO as bpio
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SubsMat import MatrixInfo as matlist
-
+from collections import  defaultdict
 from peewee import MySQLDatabase
 
 from GlobinQ.db import reduced_code, sites, mysql_db, site_pos
 from GlobinQ.db.Model import Globin, Tax, Channel, PosInsertion, \
     ExperimentalData, GlobinPosition, GlobinPDBPosition, PDB, User
+from Bio.PDB import PDBParser,parse_pdb_header
+from db.update_pdb_alignments import process_globin_structure
 
+from Bio.PDB import *
 
 def identity(hsp):
     return 1.0 * hsp.ident_num / hsp.aln_span
@@ -36,71 +39,83 @@ def upload_globin(postdata):
     sequence = "".join(filter(lambda x: not re.match(r'^\s*$', x), postdata["sequence"]))
     os.mkdir("/tmp/" + bid)
     bpio.write(SeqRecord(id="query", seq=Seq(sequence)), "/tmp/" + bid + "/query.fasta", "fasta")
-    cmd = "blastp -db data/generated/sequences.fasta -query  /tmp/%s/query.fasta -evalue 0.00001  -outfmt 5  -max_hsps 1 > /tmp/%s/result.xml"
+    cmd = "blastp -db data/generated/sequences.fasta -query  /tmp/%s/query.fasta -evalue 0.0000001  -outfmt 5  -max_hsps 1 > /tmp/%s/result.xml"
     sp.check_output(cmd % (bid, bid), shell=True)
 
     hits = []
     for q in bpsio.parse("/tmp/%s/result.xml" % bid, "blast-xml"):
         for h in q:
             for hsp in h:
-                if (coverage(q, hsp) > 0.8) and (hit_coverage(q, hsp) > 0.8):
+                if (coverage(q, hsp) > 0.85) and (hit_coverage(q, hsp) > 0.85) and identity(hsp) > 0.55:
                     hits.append([identity(hsp), hsp.hit_id])
+
+    if not hits:
+        return {"error": "No curated globins found for that sequence"}
 
     if hits:
         hit_id = [x[1] for x in sorted(hits, key=lambda y: y[0])][-1]
 
         g = Globin.select().where(Globin.aln_id == hit_id).first()
 
-        from Bio import pairwise2
-        matrix = matlist.blosum62
-        alignment = pairwise2.align.globaldx(
-            sequence,
-            g.sequence, matrix
-        )[0]
-        aln_q, aln_h = alignment[0:2]
+        # from Bio import pairwise2
+        # matrix = matlist.blosum62
+        # alignment = pairwise2.align.globaldx(
+        #     sequence,
+        #     g.sequence, matrix
+        # )[0]
+        # aln_q, aln_h = alignment[0:2]
+        #
+        # q_pos = -1
+        #
+        # blast_aln_pos = -1
+        #
+        # msa_new_globin_seq = ""  # build extended alignment
+        # old_globin_map = {}  # map from exended alignmento to curated msa
+        # extended_msa_pos = -1
+        #
+        # pos_aditions = {x: 0 for x in site_pos.keys()}
+        #
+        # for msa1_pos, aa in enumerate(g.aln_seq):
+        #     if aa == "-":
+        #         extended_msa_pos += 1
+        #         old_globin_map[extended_msa_pos] = msa1_pos
+        #         msa_new_globin_seq += "-"
+        #     else:
+        #         q_pos += 1
+        #         blast_aln_pos += 1
+        #         while (aln_q[blast_aln_pos] == "-" or aln_h[blast_aln_pos] == "-"):
+        #             extended_msa_pos += 1
+        #             old_globin_map[extended_msa_pos] = msa1_pos
+        #             msa_new_globin_seq += aln_q[blast_aln_pos]
+        #             blast_aln_pos += 1
+        #
+        #             for pos_name, pos_idx_in_msa in site_pos.items():
+        #                 if pos_idx_in_msa >= msa1_pos:
+        #                     pos_aditions[pos_name] += 1
+        #
+        #         extended_msa_pos += 1
+        #         old_globin_map[extended_msa_pos] = msa1_pos
+        #         msa_new_globin_seq += aln_q[blast_aln_pos]
+        cmd = "mafft --keeplength --mapout --addfull /tmp/{bid}/query.fasta  data/generated/msa.fasta >  /tmp/{bid}/msa.fasta"
+        sp.call(cmd.format(bid=bid), shell=True)
+        for r in bpio.parse("/tmp/" + bid + "/msa.fasta", "fasta"):
+            if r.id == "query":
+                msa_new_globin_seq = str(r.seq)
 
-        q_pos = -1
+        # positions = {p.seq_pos: p for p in g.positions}
+        # pos_aa = {p.g_position: g.sequence[p.seq_pos] for p in g.positions}
 
-        blast_aln_pos = -1
-
-        msa_new_globin_seq = ""  # build extended alignment
-        old_globin_map = {}  # map from exended alignmento to curated msa
-        extended_msa_pos = -1
-
-        pos_aditions = {x: 0 for x in site_pos.keys()}
-
-        for msa1_pos, aa in enumerate(g.aln_seq):
-            if aa == "-":
-                extended_msa_pos += 1
-                old_globin_map[extended_msa_pos] = msa1_pos
-                msa_new_globin_seq += "-"
-            else:
-                q_pos += 1
-                blast_aln_pos += 1
-                while (aln_q[blast_aln_pos] == "-" or aln_h[blast_aln_pos] == "-"):
-                    extended_msa_pos += 1
-                    old_globin_map[extended_msa_pos] = msa1_pos
-                    msa_new_globin_seq += aln_q[blast_aln_pos]
-                    blast_aln_pos += 1
-
-                    for pos_name, pos_idx_in_msa in site_pos.items():
-                        if pos_idx_in_msa >= msa1_pos:
-                            pos_aditions[pos_name] += 1
-
-                extended_msa_pos += 1
-                old_globin_map[extended_msa_pos] = msa1_pos
-                msa_new_globin_seq += aln_q[blast_aln_pos]
-
-        positions = {p.seq_pos: p for p in g.positions}
-        pos_aa = {p.g_position: g.sequence[p.seq_pos] for p in g.positions}
         tax = Tax.select().where(Tax.id == postdata["tax"]["id"]).get()
+        # pos_aa = {}
+        seq_pos_from_aln_pos = {x.strip().split(", ")[-1]:int(x.strip().split(", ")[1])
+                  for x in open("/tmp/" + bid + "/query.fasta.map").readlines()[2:] }
 
         rcod = "".join(
-            [reduced_code("sa", pos, pos_aa[pos]) for pos in sites["sa"]])
-        scod = "".join([pos_aa[pos] for pos in sites["sa"]])
+            [reduced_code("sa", pos, msa_new_globin_seq[site_pos[pos]]) for pos in sites["sa"]])
+        scod = "".join([msa_new_globin_seq[site_pos[pos]] for pos in sites["sa"]])
 
         new_globin = Globin(
-            uniprot=postdata.get("uniprot","unknown"),
+            uniprot=postdata.get("uniprot", "unknown"),
             tax=tax,
             globin_group=g.globin_group,
             sequence=sequence,
@@ -114,16 +129,16 @@ def upload_globin(postdata):
             active_site_red=rcod
         )
         new_globin.name = new_globin.globinName()
-        new_globin.l_channel.sequence = "".join([pos_aa[pos] for pos in sites["lt"]])
-        new_globin.g8_channel.sequence = "".join([pos_aa[pos] for pos in sites["g8"]])
-        new_globin.e7_portal.sequence = "".join([pos_aa[pos] for pos in sites["e7"]])
+        new_globin.l_channel.sequence = "".join([msa_new_globin_seq[site_pos[pos]] for pos in sites["lt"]])
+        new_globin.g8_channel.sequence = "".join([msa_new_globin_seq[site_pos[pos]] for pos in sites["g8"]])
+        new_globin.e7_portal.sequence = "".join([msa_new_globin_seq[site_pos[pos]] for pos in sites["e7"]])
 
         new_globin.l_channel.sequence_red = "".join([
-            reduced_code("tl", pos, pos_aa[pos]) for pos in sites["lt"]])
+            reduced_code("tl", pos, msa_new_globin_seq[site_pos[pos]]) for pos in sites["lt"]])
         new_globin.g8_channel.sequence_red = "".join([
-            reduced_code("g8", pos, pos_aa[pos]) for pos in sites["g8"]])
+            reduced_code("g8", pos, msa_new_globin_seq[site_pos[pos]]) for pos in sites["g8"]])
         new_globin.e7_portal.sequence_red = "".join([
-            reduced_code("e7", pos, pos_aa[pos]) for pos in sites["e7"]])
+            reduced_code("e7", pos, msa_new_globin_seq[site_pos[pos]]) for pos in sites["e7"]])
         new_globin.closest_curated = g
         new_globin.save(force_insert=True)
 
@@ -132,59 +147,52 @@ def upload_globin(postdata):
                              k_off_o2_exp=experimental["k_off_o2_exp"],
                              globin=new_globin,
                              sequence_red=experimental["name"]).save()
+        result = "/tmp/{bid}/pdb_blast.xml".format(bid=bid)
+        cmd = "blastp -db /data/databases/pdb/processed/seqs_from_pdb.fasta -query  /tmp/{bid}/query.fasta -evalue 0.0001 -qcov_hsp_perc 80  -outfmt 5  -max_hsps 1 > {result}"
+        sp.call(cmd.format(bid=bid, result=result), shell=True)
 
-        q_pos = -1
-        h_pos = -1
-        for i in range(len(aln_q)):
-            if aln_q[i] != "-":
-                q_pos += 1
-            if aln_h[i] != "-":
-                h_pos += 1
 
-            if h_pos in positions:
-                gp = GlobinPosition(globin=new_globin, seq_pos=q_pos,
-                                    g_position=positions[h_pos].g_position)
-                gp.save(force_insert=True)
-                for r in positions[h_pos].residues:
-                    pdb = PDB.select().where((PDB.pdb == r.pdb.pdb) &
-                                             (PDB.globin == new_globin))
-                    pdb = list(pdb)
-                    if pdb:
-                        pdb = pdb[0]
-                    else:
+        alns = defaultdict(lambda :{})
+        blast_results = {q.id: q for q in bpsio.parse(result, "blast-xml")}
+        for q in blast_results.values():
+            for hit in q:
+                for hsp in hit:
+                    if identity(hsp) > 0.95:
+                        alns[q.id]["_".join(hit.id.split("_")[0:2])] = hsp
 
-                        pdb_aln_seq = ""
-                        processed_pos = []
-                        for ext_msa_idx, aa in enumerate(msa_new_globin_seq):
-                            if aa == "-":
-                                pdb_aln_seq += "-"
-                            else:
-                                pos = old_globin_map[ext_msa_idx]
-                                if pos not in processed_pos:
-                                    processed_pos.append(pos)
-                                    pdb_aln_seq += r.pdb.aln_seq[pos]
-                                else:
-                                    pdb_aln_seq += "-"
+        for p  in g.positions:
+            gpos = site_pos[p.g_position]
+            while str(gpos) not in seq_pos_from_aln_pos:
+                gpos += 1
 
-                        pdb = PDB(
-                            tax=tax,
-                            globin=new_globin,
-                            pdb=r.pdb.pdb,
-                            description=r.pdb.description,
-                            organism=r.pdb.organism,
-                            chain=r.pdb.chain,
-                            aln_seq=pdb_aln_seq
-                        )
-                        pdb.save(force_insert=True)
+            gp = GlobinPosition(globin=new_globin, seq_pos=seq_pos_from_aln_pos[str(gpos)],
+                            g_position=p.g_position)
+            gp.save(force_insert=True)
 
-                    gpdb = GlobinPDBPosition(pdb=pdb, globin_pos=gp,
-                                             pdb_res_id=r.pdb_res_id)
-                    gpdb.save()
-                del positions[h_pos]
 
-        for pos_name, additions_count in pos_aditions.items():
-            pi = PosInsertion(globin=new_globin, g_position=pos_name, insertions=additions_count)
-            pi.save()
+        if alns:
+            polypeps=defaultdict(lambda :{})
+            for hit in alns["query"]:
+                if len(hit.split("_")[0]) == 4:
+                    pdb = hit.split("_")[0]
+                    pdb_path = "/data/databases/pdb/divided/" + pdb[1:3] + "/pdb" + pdb + ".ent"
+                    with open(pdb_path) as h:
+                        header = parse_pdb_header(h)
+                    struct = PDB(globin=new_globin, pdb=hit.split("_")[0], chain=hit.split("_")[1],
+                                 description=header["name"])
+                    if (("source" in header) and header["source"]
+                            and ("organism_scientific" in header["source"].values()[0])):
+                        struct.organism = header["source"].values()[0]["organism_scientific"]
+                    struct.save(force_insert=True)
+
+                    parser = PDBParser(QUIET=True)
+                    structure = parser.get_structure(pdb, pdb_path)
+                    ppb = CaPPBuilder()
+                    polipep = list(ppb.build_peptides(structure[0][struct.chain]))[0]
+                    polypeps[pdb][struct.chain] = polipep
+
+                    process_globin_structure(new_globin, struct, alns, polypeps, lambda g: "query")
+
 
         return {"id": new_globin.id}
 

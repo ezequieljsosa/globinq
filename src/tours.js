@@ -3,16 +3,18 @@ import $ from 'jquery';
 
 
 function hideTourNext(tour) {
+
     setTimeout(function () {
+
         $('div.popover-navigation > div > button:nth-child(2)').hide();
-        $('div.popover-navigation > button').hide();
+        //$('div.popover-navigation > button').hide();
 
     }, 500);
 }
 
 function hideTourEnd(tour) {
     setTimeout(function () {
-        $('div.popover-navigation > button').hide();
+        //$('div.popover-navigation > button').hide();
 
     }, 500);
 }
@@ -179,7 +181,7 @@ function tour_globin() {
             , {
                 element: "#msaDiv",
                 title: "Scrolled position",
-                content: "With our previous action, now we can see that the alignment position 272 is selected.",
+                content: "With our previous action, now we can see that the alignment position 271 is selected.",
                placement: "bottom",
                 onShown: hideTourEnd
 
@@ -216,31 +218,31 @@ function tour_stats() {
                 element: "a[href='/global']",
                 title: "Start stats tutorial",
                 placement: "bottom",
-                content: "In this tutorial we will have a brief tour about the database resources. Press 'Data' to continue.",
+                content: "In this tutorial we will have a brief tour about the database resources. Press 'Analyzed Data' to continue.",
                 reflex: true,
                 onShown: hideTourNext //
             }, {
                 element: "a[href='/global']",
-                title: "Data",
+                title: "Analyzed Data",
                 placement: "bottom",
                 content: "We will start by exploring the core resources: the curated trHb multiple sequence alignment (MSA) " +
                 "and its phylogic tree. <b>WAIT</b> until the data appears and press 'Next' to continue.",
                 onShown: hideTourEnd
             }, {
                 element: "#msaDiv",
-                title: "Data",
+                title: "Analyzed Data",
                placement: "top",
                 content: "The MSA construction is explained <a href='https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004701'> here </a>. In it, we can visualize all 1106 trHbs and their reference organism in the first column, and all the positions in the following ones. The vertical scroll is used to visualize the different proteins and the horizontal to view the positions. Press 'Next' to continue.",
                 onShown: hideTourEnd
             }, {
                 element: "#msaDiv",
-                title: "Data",
+                title: "Analyzed Data",
                placement: "top",
                 content: "Also, in the upper part, we can see the profile logo. Here we navigate to the position 271, which corresponds to the site H9 from the chanels STG8 and LT. We will review this in the abundance graph later. Click 'Next' to continue.",
                 onShown: function (tour) {
                     hideTourEnd();
                     const m = $("#msaDiv").data();
-                    const pos = 271;
+                    const pos = 270;
                     const sel = new ColumnSelection({xStart: pos, xEnd: pos});
                     m.g.selcol.add(sel)
                     m.g.zoomer.setLeftOffset((pos - 25) > 0 ? (pos - 25) : 0)
@@ -248,7 +250,7 @@ function tour_stats() {
                 }
             }, {
                 element: "#legend",
-                title: "Data",
+                title: "Analyzed Data",
                placement: "top",
                 content: "This tree build from the previous MSA (also explained <a href='https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004701'> here </a>), shows the trHbs phylogenetic relationships in an radial layout. The labels are shown in its leafs and in different colors and layers we can see its Group and if there is experimental data or PDB structure available. Zoom is handled with the mouse wheel and navigation by dragging the tree with the left mouse button. Press 'Next' to continue.",
                 onShown: hideTourEnd
@@ -402,7 +404,7 @@ function tour_blast() {
             }, {
                 element: "#globinRecord",
                 title: "End",
-                content: "In this tutorial we did a blast search on the database and visit the visualization options.",
+                content: "In this tutorial we performed a blast search on the database and visit the visualization options.",
                placement: "bottom",
                 orphan: true
             }
@@ -476,7 +478,7 @@ function tour_upload() {
             },{
                 element: "#add_exp_data_btn",
                 title: "Upload Data",
-               placement: "bottom",
+               placement: "top",
                 content: "If you have data from mutant sequences, you can add them here. Press 'Add experimental Data'",
                 reflex:true,
                 onShown: hideTourNext
@@ -489,7 +491,7 @@ function tour_upload() {
             },{
                 element: "#upload_globin_btn",
                 title: "Upload Data",
-               placement: "bottom",
+               placement: "top",
                 content: "Now lets finally upload our protein. Press 'Upload Globin' to continue.",
                 reflex:true,
                 onShown: hideTourNext
