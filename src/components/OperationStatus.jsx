@@ -4,11 +4,9 @@ import {
 } from 'react-bootstrap';
 
 
+const OperationStatus = ({ok, error, divId}) => (
 
-
-const OperationStatus = ( {ok, error}) => (
-
-    <div>
+    <div id={divId}>
 
         {error && <Alert bsStyle="danger">
             <h4>{error}</h4>
@@ -19,17 +17,17 @@ const OperationStatus = ( {ok, error}) => (
             <h4>{ok}</h4>
         </Alert>
         }
-    </div> )
+    </div>);
 
 
 OperationStatus.defaultProps = {
-
-}
+    divId: 'operation_status_div'
+};
 OperationStatus.propTypes = {
     ok: React.PropTypes.string.isRequired,
-    error: React.PropTypes.string.isRequired
-
-}
+    error: React.PropTypes.string.isRequired,
+    divId: React.PropTypes.string
+};
 
 
 export default OperationStatus;

@@ -133,7 +133,7 @@ function tour_globin() {
             , {
                 element: "#msaDiv",
                 title: "MSA with structures",
-                content: "When there are PDB structures from homologous sequences available, this msa is shown. The first entry is the current globin sequence and the rest its alignment with the pdb chain sequence",
+                content: "Given the case where PDB structures from homologous sequences are available, a specific MSA considering them is also shown, so different possible combinations of amino acids at key positions are easily comparable between the globin you are interested in and others",
                placement: "bottom",
                 onShown: hideTourEnd
 
@@ -149,7 +149,7 @@ function tour_globin() {
             , {
                 element: "#glmol02",
                 title: "3D Structure",
-                content: "Using GLMol, the first chain from the PDB structure can be viewed.",
+                content: "The 3D structure is shown using GLMol, and different PDBs can be selected if available using the structure box.",
                placement: "bottom",
                 onShown: hideTourEnd
 
@@ -157,7 +157,7 @@ function tour_globin() {
             , {
                 element: "input[name='siteCheckSTG8_G8']",
                 title: "Highlight Pos",
-                content: "This simple interface allows to see the important residues positions in the structure. Click the G8 checkbox to view the aminoacid.",
+                content: "In the left interface we can see the important residues positions at the structure. Click the G8 checkbox to view the amino acid over the structure.",
                placement: "bottom",
                 reflex: true,
                 onShown: hideTourNext
@@ -165,7 +165,7 @@ function tour_globin() {
             , {
                 element: "#glmol02",
                 title: "Residue Label",
-                content: "Now we can see the label Val 94 from the G8 Site.",
+                content: "Now we can see the label Val 94 at the G8 structural site. It can also be interacted between the MSA and the interface to the left of the structure.",
                placement: "bottom",
                 onShown: hideTourEnd
 
@@ -173,7 +173,7 @@ function tour_globin() {
             , {
                 element: "#div_id4",
                 title: "Highlight Alignment",
-                content: "Finally, by selecting a site in the sequence annotation panel, the site is scrolled in the MSA and structure. Click on the last site - H9  and then 'Next' to continue.",
+                content: "Click on the last site - H9. The site is scrolled in the MSA and structure and now we can see that the alignment position 271 is selected. Click on the last site - H9  and then 'Next' to continue.",
                 placement: "top",
                 onShown: hideTourEnd
 
@@ -181,7 +181,7 @@ function tour_globin() {
             , {
                 element: "#msaDiv",
                 title: "Scrolled position",
-                content: "With our previous action, now we can see that the alignment position 271 is selected.",
+                content: "Now in GLMol we can see the Val 94 from the G8 Site and alignment position 271 is selected.",
                placement: "bottom",
                 onShown: hideTourEnd
 

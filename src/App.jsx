@@ -39,7 +39,10 @@ const Header = ({base, logged, logout}) => (
         </Navbar.Header>
         <Nav>
             <NavItem eventKey={3}><Link to={base + "tutorial"} style={{color:"white"}}>Interactive <br /> Tutorials</Link></NavItem>
-            <NavItem eventKey={1}><Link to={base + "global"} style={{color:"white"}}>Analyzed <br />Data </Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "global"} style={{color:"white"}}>T globins </Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "global"} style={{color:"white"}}>M globins </Link></NavItem>
+            <NavItem eventKey={1}><Link to={base + "global"} style={{color:"white"}}>S globins </Link></NavItem>
+
             <NavItem eventKey={1}><Link to={base + "statistics"} style={{color:"white"}}>AA distributions </Link></NavItem>
             {(logged) ?
                 <NavItem eventKey={3}><Link to={base + "upload"} style={{color:"white"}}>Upload <br />My Globin</Link></NavItem>
@@ -161,7 +164,7 @@ class App extends React.Component {
             delete cookies.user;
             cookies.set('user', "", {path: '/'});
             this.setState({user: null});
-
+            window.location = `http://${this.props.ip}:${this.props.port}/`
         };
 
 
@@ -199,9 +202,11 @@ class App extends React.Component {
                     <Route path={b + "login"} render={withRouter(({history}) =>
                         <Login base={b} apiUrl={`http://${this.props.ip}:${this.props.port}${apiUrl}`}
                                success={user => {
-
-                                   cookies.set('user', user, {path: '/'});
-
+                                   let d = new Date();
+                                   const minutes = 30;
+                                   d.setTime(d.getTime() + (minutes*60*1000));
+                                   cookies.set('user', user, {path: '/', expires: d});
+                                   window.setTimeout(logout,minutes*60*1000)
                                    this.setState({user: user});
                                    history.push("/user/"  + user.id.toString());
                                }}/>)}/>

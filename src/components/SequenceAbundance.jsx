@@ -129,14 +129,14 @@ class SequenceAbundance extends React.Component {
     // Fade all but the current sequence, and show it in the breadcrumb trail.
     mouseover( d ) {
         
-        const getseq = x => (x.parent.data.name !== "root" ) ?  getseq(x.parent) + x.data.name : x.data.name
+        const getseq = x => (x.parent.data.name !== "root" ) ?  getseq(x.parent) + x.data.name : x.data.name;
         
         const seq = getseq(d);
         const me = this;
         this.props.positions.forEach((pos,i) => {
             const val = (seq.length <= i  ) ? "-" : seq[i];
             $("#" + pos + me.label() ).html( val );
-        })
+        });
         
         let percentage = ( 100 * d.value / this.totalSize ).toPrecision( 3 );
         let percentageString = percentage + "%";

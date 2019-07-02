@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 import msa from "msa";
 
 import "msa/css/msa.css";
+import $ from  'jquery';
 
 const GlobinRow = (props) => {
 
@@ -64,7 +65,7 @@ class GlobinHitTable extends React.Component {
             overviewbox: false,
             seqlogo: false,
         };
-        opts.colorscheme = {}
+        opts.colorscheme = {};
         opts.zoomer = {
             boxRectHeight: 1,
             boxRectWidth: 1,
@@ -76,33 +77,39 @@ class GlobinHitTable extends React.Component {
         this.m = msa(opts);
         this.m.render();
 
-        const query = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] === "query")[0]
-        const hit = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] !== "query")[0]
+        const query = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] === "query")[0];
+        const hit = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] !== "query")[0];
 
 
         this.m.seqs.add({name: query, seq: this.state.seqs[query]});
         this.m.seqs.add({name: hit, seq: this.state.seqs[hit]});
-    }
+    };
 
     openAln = (aln) => {
+
+
+            $([document.documentElement, document.body]).animate({
+                scrollTop: $("#globin_hit_table").offset().top
+            }, 500);
+
         this.setState({open: !this.state.open, seqs: aln})
 
-    }
+    };
 
     downloadAln = () => {
-        const query = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] === "query")[0]
-        const hit = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] !== "query")[0]
+        const query = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] === "query")[0];
+        const hit = Object.keys(this.state.seqs).filter(x => x.split(" ")[0] !== "query")[0];
 
-        var element = document.createElement("a");
+        const element = document.createElement("a");
         let txt = JSON.stringify(
             [{name: query, seq: this.state.seqs[query]},
                 {name: hit, seq: this.state.seqs[hit]}]
-        )
-        var file = new Blob([txt], {type: 'text/plain'});
+        );
+        const file = new Blob([txt], {type: 'text/plain'});
         element.href = URL.createObjectURL(file);
         element.download = "aln.txt";
         element.click();
-    }
+    };
 
     render() {
         const {globins} = this.props;

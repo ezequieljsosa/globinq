@@ -48,9 +48,9 @@ def upload_globin(postdata):
             for hsp in h:
                 if (coverage(q, hsp) > 0.85) and (hit_coverage(q, hsp) > 0.85) and identity(hsp) > 0.55:
                     hits.append([identity(hsp), hsp.hit_id])
-
+    no_hit_err = "No curated truncated globins found for that sequence.\n Currently this functionality is only available for truncated globins"
     if not hits:
-        return {"error": "No curated globins found for that sequence"}
+        return {"error": no_hit_err}
 
     if hits:
         hit_id = [x[1] for x in sorted(hits, key=lambda y: y[0])][-1]
@@ -96,7 +96,7 @@ def upload_globin(postdata):
         #         extended_msa_pos += 1
         #         old_globin_map[extended_msa_pos] = msa1_pos
         #         msa_new_globin_seq += aln_q[blast_aln_pos]
-        cmd = "mafft --keeplength --mapout --addfull /tmp/{bid}/query.fasta  data/generated/msa.fasta >  /tmp/{bid}/msa.fasta"
+        cmd = "mafft --keeplength --mapout --addfull /tmp/{bid}/query.fasta  data/generated/msa.fasta >  /tmp/{bid}/msa.fasta 2>/tmp/{bid}/msa.err"
         sp.call(cmd.format(bid=bid), shell=True)
         for r in bpio.parse("/tmp/" + bid + "/msa.fasta", "fasta"):
             if r.id == "query":
@@ -197,7 +197,7 @@ def upload_globin(postdata):
         return {"id": new_globin.id}
 
     else:
-        return {"error": "No curated globins found for that sequence"}
+        return {"error": no_hit_err}
 
 
 if __name__ == '__main__':

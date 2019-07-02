@@ -19,7 +19,13 @@ class Login extends React.Component {
         model[control] = value;
         this.setState({'model': model});
     };
+    resetPass = () => {
+        var email = prompt("Please enter your email", "Pass Reset");
 
+        if (email != null) {
+            window
+        }
+    };
     login = () => {
 
         const success = this.props.success;
@@ -41,7 +47,7 @@ class Login extends React.Component {
                 }
             })
             .catch((err) => console.log(err))
-    }
+    };
 
     render() {
         const base = this.props.base;
@@ -75,7 +81,9 @@ class Login extends React.Component {
             <Row><Col md={12}>
                 <table>
                     <tr><td><Button onClick={this.login}> Login</Button></td>
-                        <td>&#160;<Link to={base + "register"}>Register</Link></td></tr>
+                        <td>&#160;<Link to={base + "register"}>Register</Link></td>
+                        {/*<td>&#160;<a onClick={this.resetPass}>Forgot Password</a></td>*/}
+                    </tr>
                 </table>
 
 

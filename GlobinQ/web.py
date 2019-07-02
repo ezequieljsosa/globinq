@@ -363,7 +363,7 @@ def protein(user_id):
         data = {}
         for k, v in c.to_dict().items():
 
-            if k == "experimental":
+            if k == "experimental" :
                 data["experimental"] = ExperimentalData.get_by_id(v).to_dict()
                 data["experimental"]["globin_name"] = Globin.get_by_id(int(data["experimental"]["globin"])).globinName()
             else:
@@ -392,7 +392,15 @@ def blast():
 @post("/upload")
 def upload():
     postdata = json.loads(request.body.read())
-    return upload_globin(postdata)
+    upload_res = upload_globin(postdata)
+    if ("error" not in upload_res) or (not upload_res["error"]):
+        contrib = Contribution()
+        contrib.user = User.get_by_id(int(postdata["owner"]["id"]))
+        contrib.ctype = "pdb"
+        contrib.creation = datetime.datetime.now()
+        contrib.last_update = datetime.datetime.now()
+        contrib.save()
+    return upload_res
 
 
 @post("/del_contrib")

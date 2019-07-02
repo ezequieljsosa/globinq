@@ -13,15 +13,15 @@ Phylocanvas.plugin(metadata);
 
 class BlastResult extends React.Component {
 
-    state = {"globin": null}
+    state = {"globin": null};
 
 
     selectedGlobin = (globin) => {
         this.setState({"globin": globin});
-    }
+    };
 
     componentDidMount() {
-        const blastedGlobins = []
+        const blastedGlobins = [];
         this.props.globins.forEach(g => {
             const x = Object.keys(g.alignment).filter(x => !x.startsWith("query"))[0].split(" ")[0];
             blastedGlobins.push(x);

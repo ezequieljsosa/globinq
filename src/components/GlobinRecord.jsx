@@ -8,7 +8,7 @@ import {
 import AddDataBtn from './AddDataBtn.jsx'
 
 const ExpStr = ({exp,user}) => <span>
-    <b>{exp.name}</b> {exp.owner && "(" } {exp.owner && exp.owner.institution }  {exp.owner && exp.owner.name } {exp.owner && ")" }<br />
+    <b>{exp.name}</b> {exp.owner  && exp.owner.institution && "(" } {exp.owner && exp.owner.institution }  {exp.owner && exp.owner.name } {exp.owner  && exp.owner.institution && ")" }<br />
     {exp.koff && <span>koff = {exp.koff.toExponential(2)} s<sup>-1</sup><br /></span>}
     {exp.kon && <span> kon = {exp.kon.toExponential(2)} M<sup>−1</sup>s<sup>−1</sup></span>}
     {user && (exp.owner.id === user.id) && <Link bsStyle="info" to={"/user/" + exp.owner.id} > Edit </Link>}
