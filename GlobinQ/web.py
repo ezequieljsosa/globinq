@@ -33,7 +33,7 @@ from Bio.SeqUtils import seq1
 from Bio.PDB.Polypeptide import is_aa,CaPPBuilder
 monkey.patch_all()
 
-
+import smtplib
 def identity(hsp):
     return 1.0 * hsp.ident_num / hsp.aln_span
 
