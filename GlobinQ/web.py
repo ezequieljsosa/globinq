@@ -620,7 +620,7 @@ def recover():
         email_text ="""
         User %s (%i) asked for a password reset
         """ % (user.email,user.id)
-        server.sendmail(gmail_user, user.email, email_text)
+        server.sendmail(gmail_user, config["gmail_user"], email_text)
         server.close()
         return {"info":"We will check your request and send you your new password as soon as possible!"}
 
