@@ -616,7 +616,7 @@ def recover():
         user = user[0]
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
-        server.login(config["gmail_user"], config["gmail_password"])
+        server.login(config["email"]["gmail_user"], config["email"]["gmail_password"])
         email_text ="""
         User %s (%i) asked for a password reset
         """ % (user.email,user.id)
