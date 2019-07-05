@@ -48,7 +48,7 @@ def upload_globin(postdata):
             for hsp in h:
                 if (coverage(q, hsp) > 0.85) and (hit_coverage(q, hsp) > 0.85) and identity(hsp) > 0.55:
                     hits.append([identity(hsp), hsp.hit_id])
-    no_hit_err = "No curated truncated globins found for that sequence.\n Currently this functionality is only available for truncated globins"
+    no_hit_err = "This functionality is currently available only for truncated hemoglobins. There is no curated truncated hemoglobin matching for your sequence. This can be associated with a sequence other than a corresponding truncated hemoglobin"
     if not hits:
         return {"error": no_hit_err}
 
@@ -96,6 +96,7 @@ def upload_globin(postdata):
         #         extended_msa_pos += 1
         #         old_globin_map[extended_msa_pos] = msa1_pos
         #         msa_new_globin_seq += aln_q[blast_aln_pos]
+
         cmd = "mafft --keeplength --mapout --addfull /tmp/{bid}/query.fasta  data/generated/msa.fasta >  /tmp/{bid}/msa.fasta 2>/tmp/{bid}/msa.err"
         sp.call(cmd.format(bid=bid), shell=True)
         for r in bpio.parse("/tmp/" + bid + "/msa.fasta", "fasta"):

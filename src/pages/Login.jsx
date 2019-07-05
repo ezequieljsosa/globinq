@@ -21,9 +21,25 @@ class Login extends React.Component {
     };
     resetPass = () => {
         var email = prompt("Please enter your email", "Pass Reset");
-
+        const me = this;
         if (email != null) {
-            window
+            fetch(this.props.apiUrl + 'ask_reset', {
+                method: 'POST',
+                headers: new Headers(),
+                body: JSON.stringify({
+                    email: email
+                })
+            }).then((res) => res.json())
+                .then((res_data) => {
+
+                    if (res_data["info"]) {
+                       me.setState({"ok":res_data["info"],"error":null})
+
+                    } else {
+                        me.setState({error: res_data ["error"],"ok":null})
+                    }
+                })
+                .catch((err) => console.log(err))
         }
     };
     login = () => {
@@ -81,8 +97,8 @@ class Login extends React.Component {
             <Row><Col md={12}>
                 <table>
                     <tr><td><Button onClick={this.login}> Login</Button></td>
-                        <td>&#160;<Link to={base + "register"}>Register</Link></td>
-                        {/*<td>&#160;<a onClick={this.resetPass}>Forgot Password</a></td>*/}
+                        <td>&#160;<Button  bsStyle="info" to={base + "register"}>Register</Button></td>
+                        <td>&#160;<Button bsStyle="danger" onClick={this.resetPass}>Forgot Password</Button></td>
                     </tr>
                 </table>
 

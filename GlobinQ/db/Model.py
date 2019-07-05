@@ -34,6 +34,7 @@ class User(GlobinqModel):
     institution = CharField()
     password = CharField()
 
+
     class Meta:
         database = mysql_db
 

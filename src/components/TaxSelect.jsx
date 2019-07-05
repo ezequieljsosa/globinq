@@ -12,7 +12,7 @@ const TaxSelect = ( {apiUrl, value, onChange, label}) => {
             callback( null, { options: [{ 'label': label, 'value': value }] });
 
         } else {
-            if ( input != "" ) {
+            if ( (input != "") && (input.length >= 3)) {
 
                 fetch( apiUrl + 'tax?search=' + input )
                     .then(( response ) => {
@@ -38,13 +38,13 @@ const TaxSelect = ( {apiUrl, value, onChange, label}) => {
 
 TaxSelect.defaultProps = {
     value: ""
-}
+};
 TaxSelect.propTypes = {
     apiUrl: React.PropTypes.string.isRequired,
     onChange: React.PropTypes.func,
     value: React.PropTypes.string
 
-}
+};
 
 export default TaxSelect;
 

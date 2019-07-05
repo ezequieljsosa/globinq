@@ -363,9 +363,10 @@ def protein(user_id):
         data = {}
         for k, v in c.to_dict().items():
 
-            if k == "experimental" :
+            if (k == "experimental") and v :
                 data["experimental"] = ExperimentalData.get_by_id(v).to_dict()
                 data["experimental"]["globin_name"] = Globin.get_by_id(int(data["experimental"]["globin"])).globinName()
+
             else:
                 data[k] = v.isoformat() if k in ["creation", "last_update"] else v
 
@@ -393,13 +394,13 @@ def blast():
 def upload():
     postdata = json.loads(request.body.read())
     upload_res = upload_globin(postdata)
-    if ("error" not in upload_res) or (not upload_res["error"]):
-        contrib = Contribution()
-        contrib.user = User.get_by_id(int(postdata["owner"]["id"]))
-        contrib.ctype = "pdb"
-        contrib.creation = datetime.datetime.now()
-        contrib.last_update = datetime.datetime.now()
-        contrib.save()
+    # if ("error" not in upload_res) or (not upload_res["error"]):
+    #     contrib = Contribution()
+    #     contrib.user = User.get_by_id(int(postdata["owner"]["id"]))
+    #     contrib.ctype = "pdb"
+    #     contrib.creation = datetime.datetime.now()
+    #     contrib.last_update = datetime.datetime.now()
+    #     contrib.save()
     return upload_res
 
 
@@ -604,6 +605,25 @@ def login():
                 "institution": user.institution}
     else:
         return {"error": "Login incorrect"}
+
+@post("/ask_reset")
+def recover():
+    credentials = json.loads(request.body.read())
+    user = list(User.select().where((User.email == str(credentials["email"]))))
+    if not user:
+        return {"error":"User not found"}
+    else:
+        user = user[0]
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(config["gmail_user"], config["gmail_password"])
+        email_text ="""
+        User %s (%i) asked for a password reset
+        """ % (user.email,user.id)
+        server.sendmail(gmail_user, user.email, email_text)
+        server.close()
+        return {"info":"We will check your request and send you your new password as soon as possible!"}
+
 
 
 @post("/register")
