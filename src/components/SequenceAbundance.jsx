@@ -91,8 +91,8 @@ class SequenceAbundance extends React.Component {
 
         root = partition( root );
         let data = root.descendants();
-        
-        
+
+
 
         data = data
             .filter( function( d ) {
@@ -123,21 +123,21 @@ class SequenceAbundance extends React.Component {
         //d3.select( "#container" )
 
     };
-    
+
     label = () => this.props.group + "_" + this.props.site
 
     // Fade all but the current sequence, and show it in the breadcrumb trail.
     mouseover( d ) {
-        
+
         const getseq = x => (x.parent.data.name !== "root" ) ?  getseq(x.parent) + x.data.name : x.data.name;
-        
+
         const seq = getseq(d);
         const me = this;
         this.props.positions.forEach((pos,i) => {
             const val = (seq.length <= i  ) ? "-" : seq[i];
             $("#" + pos + me.label() ).html( val );
         });
-        
+
         let percentage = ( 100 * d.value / this.totalSize ).toPrecision( 3 );
         let percentageString = percentage + "%";
         if ( percentage < 0.1 ) {
@@ -150,7 +150,7 @@ class SequenceAbundance extends React.Component {
         d3.select( "#explanation" + this.label() )
             .style( "visibility", "" );
 
-        let sequenceArray = this.getAncestors( d );        
+        let sequenceArray = this.getAncestors( d );
         //this.updateBreadcrumbs( sequenceArray, percentageString );
         this.setState( { path: sequenceArray.map(x=>x.data.name), percentage: percentageString })
 
@@ -173,7 +173,7 @@ class SequenceAbundance extends React.Component {
         // Hide the breadcrumb trail
         d3.select( "#trail" + this.label())
             .style( "visibility", "hidden" );
-        
+
         // Deactivate all segments during transition.
         //        this.vis.selectAll( "path" ).on( "mouseover", null );
 
@@ -182,7 +182,7 @@ class SequenceAbundance extends React.Component {
             //            .transition()
             //            .duration( 1000 )
             .style( "opacity", 1 )
-        //            .on( "end", function() {               
+        //            .on( "end", function() {
         //                d3.select( this ).on( "mouseover", me.mouseover );
         //            });
 
@@ -202,7 +202,7 @@ class SequenceAbundance extends React.Component {
         }
         return path;
     }
-    
+
     drawLegend() {
 
         // Dimensions of legend item: width, height, spacing, radius of rounded rect.
@@ -239,7 +239,7 @@ class SequenceAbundance extends React.Component {
 
     // Take a 2-column CSV and transform it into a hierarchical structure suitable
     // for a partition layout. The first column is a sequence of step names, from
-    // root to leaf, separated by hyphens. The second column is a count of how 
+    // root to leaf, separated by hyphens. The second column is a count of how
     // often that sequence occurred.
     buildHierarchy( csv ) {
 
@@ -292,12 +292,12 @@ class SequenceAbundance extends React.Component {
         const me = this;
         d3.text( "./generated/abundances_" + this.props.group + "_" + this.props.site +".csv ", function( text ) {
             let csv = d3.csvParseRows( text );
-            
+
             csv.forEach( x => {
-                
+
                 me.totalSize += parseInt(x[1],10);
             })
-            
+
             //let json = this.buildHierarchy( csv );
 //            const stratify = d3.stratify()
 //                .id( function( d ) { return d[0] })
@@ -315,20 +315,20 @@ class SequenceAbundance extends React.Component {
             <Grid>
                 <Row>
                     <Col md={4}>
-                        <div> 
-                          
+                        <div>
+
                             <Table><tbody> <tr>
                 { this.props.positions.map((x,i) =>  <td key={i}>{x}</td>)}
-                                
+
                                 </tr>
                             <tr>
-                
+
                 { this.props.positions.map((x,i) =>  <td  key={i} id={x + this.label() }>-</td>)}
-                
+
                 </tr> </tbody></Table>
-                            
-                            
-                        
+
+
+
                         </div>
                         <div id={"chart" + this.label()}>
                             <div id={"explanation" + this.label()} style={{

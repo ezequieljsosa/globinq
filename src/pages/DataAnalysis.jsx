@@ -83,7 +83,7 @@ class DataAnalysis extends React.Component {
 
         m.g.on("row:click", data => {
             //const name = m.seqs.at(data.seqId).attributes.name;
-            //console.log(name);        
+            //console.log(name);
 
             const branch = me.tree.branches[data.seqId + "__"];
 
@@ -236,68 +236,68 @@ class DataAnalysis extends React.Component {
 
     render(props) {
 
-        return <Grid>
+            return <Grid>
 
 
-            <Row>
-                <Col md={12}>
-                    <h1 id="msa_title">MSA</h1>
-                    <div id="msaDiv"></div>
+                <Row>
+                    <Col md={12}>
+                        <h1 id="msa_title">MSA</h1>
+                        <div id="msaDiv"></div>
 
-                </Col>
-            </Row>
+                    </Col>
+                </Row>
 
-            <Row>
-                <Col md={12}>
-                    <br/>
-                    <br/>
-
-                    <h1 id="tree_title">Tree
-                    </h1>
-
-
-                    <div id="legend" style={{position: "absolute", top: "100px"}}>
-                        <table>
-                            <tr>
-                                <td>Experimental Data</td>
-                                <td style={{width: 50, backgroundColor: "violet"}}></td>
-                            </tr>
-                            <tr>
-                                <td>PDB available</td>
-                                <td style={{width: 50, backgroundColor: "red"}}></td>
-                            </tr>
-                        </table>
+                <Row>
+                    <Col md={12}>
                         <br/>
                         <br/>
-                        <table>
-                            <tr>
-                                <td>N Group</td>
-                                <td style={{width: 50, backgroundColor: "#27aa00"}}></td>
-                            </tr>
-                            <tr>
-                                <td>O Group</td>
-                                <td style={{width: 50, backgroundColor: "#0056e2"}}></td>
-                            </tr>
-                            <tr>
-                                <td>P Group</td>
-                                <td style={{width: 50, backgroundColor: "#ff7200"}}></td>
-                            </tr>
-                            <tr>
-                                <td>Q Group</td>
-                                <td style={{width: 50, backgroundColor: "#ffdd00"}}></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div style={{height: 1000, position: "absolute", top: "50"}} id="tree">
+
+                        <h1 id="tree_title">Tree
+                        </h1>
 
 
-                    </div>
+                        <div id="legend" style={{position: "absolute", top: "100px"}}>
+                            <table>
+                                <tr>
+                                    <td>Experimental Data</td>
+                                    <td style={{width: 50, backgroundColor: "violet"}}></td>
+                                </tr>
+                                <tr>
+                                    <td>PDB available</td>
+                                    <td style={{width: 50, backgroundColor: "red"}}></td>
+                                </tr>
+                            </table>
+                            <br/>
+                            <br/>
+                            <table>
+                                <tr>
+                                    <td>N Group</td>
+                                    <td style={{width: 50, backgroundColor: "#27aa00"}}></td>
+                                </tr>
+                                <tr>
+                                    <td>O Group</td>
+                                    <td style={{width: 50, backgroundColor: "#0056e2"}}></td>
+                                </tr>
+                                <tr>
+                                    <td>P Group</td>
+                                    <td style={{width: 50, backgroundColor: "#ff7200"}}></td>
+                                </tr>
+                                <tr>
+                                    <td>Q Group</td>
+                                    <td style={{width: 50, backgroundColor: "#ffdd00"}}></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style={{height: 1000, position: "absolute", top: "50"}} id="tree">
 
-                </Col>
-            </Row>
+
+                        </div>
+
+                    </Col>
+                </Row>
 
 
-        </Grid>
+            </Grid>
     }
 }
 

@@ -1,1 +1,56 @@
 {% extends "base.html" %}
+
+{% load static %}
+{% load i18n %}
+{% load globinq_tags %}
+
+{% block content %}
+
+  <script>
+    function blast() {
+      fetch({% url 'globinq:blast' %},
+        {
+          method: "POST",
+          body: JSON.stringify({'sequence': this.state.blast_seq})
+        })
+        .then(function (res) {
+          return res.json();
+        })
+        .then(function (data) {
+
+          window.location = "{% url 'globinq:blast' %}?jid=" + data.id;
+        });
+
+    }
+  </script>
+
+  <div>
+    <div class="row">
+
+      <div class="col-md-12">
+        <div class="jumbotron">
+          <h1>GlobinQ</h1>
+          <p>An interactive and integrative site for globin sequence, phylogenetic, structural and functional queries
+            relationships.
+          </p>
+          <p>
+            {% search_box %}
+          </p>
+        </div>
+
+        </Col>
+
+      </div>
+
+
+      <div class="col-md-12">
+
+        <h2 id="blast_caption">Blast Search </h2>
+        <textarea id="blast_textarea" style="width:100%;" rows="5">{{ blast_search }}</textarea>
+        <button class="btn btn-primary" id="blast_btn" onclick="blast()">Blast</button>
+      </div>
+
+    </div>
+
+  </div>
+{% endblock %}

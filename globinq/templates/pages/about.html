@@ -1,1 +1,36 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+
+      <img src="{% static 'logoiquibicen.svg' %}"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <img src="{% static 'ibb-logo-x-300.jpg' %}"/>
+      <br/>
+
+
+      <ul>
+        <li>Boechi, Leonardo</li>
+        <li>Bustamante, Juan Pablo</li>
+        <li>Martí, Marcelo</li>
+        <li>Navarro, Belen</li>
+        <li>Schuster, Claudio</li>
+        <li>Sosa, Ezequiel</li>
+
+      </ul>
+
+      <h2>Related publications:</h2>
+
+      <ul>
+        <li><a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004701">Evolutionary and
+          Functional Relationships in the Truncated Hemoglobin Family</a></li>
+        <li><a href="https://academic.oup.com/bioinformatics/article/32/12/1805/1744225">A quantitative model for oxygen
+          uptake and release in a family of hemeproteins</a></li>
+      </ul>
+      </div></div>
+  </div>
+{% endblock content %}

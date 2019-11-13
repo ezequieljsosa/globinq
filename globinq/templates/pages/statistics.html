@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load globinq_tags %}
+
+{% block content %}
+
+
+  <script src="https://d3js.org/d3.v5.js"></script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+
+
+      <h1> Some interactive statistics about trHbs groups for active site and tunnels amino acids </h1>
+    </div>
+
+      {% for group,site_code,site,site_name,positions in groups %}
+
+      <div class="col-md-6">
+      <br/>
+      <br/>
+      <br/>
+
+      <h3>Group <b>{{group}}</b>, {{site}}  {{site_name}} sequence abundances</h3>
+
+
+        {% sequence_abundance group site_code site positions %}
+      </div>
+
+      {% endfor %}
+
+
+
+
+    </div>
+  </div>
+{% endblock content %}

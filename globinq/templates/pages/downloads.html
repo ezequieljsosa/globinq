@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+  <div class="container">
+  <div class="row">
+    <div class="col-md-12">
+
+
+      <ul>
+        <li><a href="{% static 'MSA.fasta' %}"> Multiple alignment </a></li>
+        <li><a href="{% static 'search?download=fasta' %}"> Sequences Fasta </a></li>
+
+        <li><a href="{% static 'tree.newick' %}"> Phylogenic Tree</a></li>
+        <li><a href="{% static 'dump.sql.gz' %}"> Sql Database </a></li>
+
+      </ul>
+
+
+    </div>
+  </div>
+{% endblock content %}

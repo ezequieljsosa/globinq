@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+from django.utils.translation import gettext_lazy as __
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
@@ -319,41 +322,41 @@ def user_page(request, user_id):
 
 
 def blast(request):
-    if request.method != "POST":
-        return HttpResponseNotFound("blast")
+    if request.method == "POST":
+        postdata = json.loads(request.body.decode('utf-8'))
+        bid = str(uuid.uuid1())
 
-    postdata = json.loads(request.body.decode('utf-8'))
-    bid = str(uuid.uuid1())
+        import re
+        pattern = re.compile(r'\s+')
+        sequence = re.sub(pattern, '', postdata["sequence"])
+        os.mkdir("/tmp/" + bid)
+        bpio.write(SeqRecord(id="query", seq=Seq(sequence)), "/tmp/" + bid + "/query.fasta", "fasta")
+        cmd = "blastp -db data/generated/sequences.fasta -query  /tmp/%s/query.fasta -evalue 0.01 -qcov_hsp_perc 80  -outfmt 5  -max_hsps 1 > /tmp/%s/result.xml"
+        sp.call(cmd % (bid, bid), shell=True)
+        return {"id": bid}
+    else:
+        blast_id = request.GET["jid"]
+        result = []
+        for q in bpsio.parse("/tmp/%s/result.xml" % blast_id, "blast-xml"):
+            for h in q:
+                for hsp in h:
+                    g = list(Globin.objects.filter(Globin.aln_id == hsp.hit_id))[0]
+                    res = serialize_search_globin(g)
+                    res["identity"] = identity(hsp)
+                    res["coverage"] = coverage(q, hsp)
+                    res["alignment"] = {
+                        hsp.query_id + " " + str(hsp.query_start) + ":" + str(hsp.query_end): str(hsp.aln[0].seq),
+                        hsp.hit_id + " " + str(hsp.hit_start) + ":" + str(hsp.hit_end): str(hsp.aln[1].seq),
+                    }
+                    result.append(res)
 
-    import re
-    pattern = re.compile(r'\s+')
-    sequence = re.sub(pattern, '', postdata["sequence"])
-    os.mkdir("/tmp/" + bid)
-    bpio.write(SeqRecord(id="query", seq=Seq(sequence)), "/tmp/" + bid + "/query.fasta", "fasta")
-    cmd = "blastp -db data/generated/sequences.fasta -query  /tmp/%s/query.fasta -evalue 0.01 -qcov_hsp_perc 80  -outfmt 5  -max_hsps 1 > /tmp/%s/result.xml"
-    sp.call(cmd % (bid, bid), shell=True)
-    return {"id": bid}
-
-
-def blast_result(request, blast_id):
-    result = []
-    for q in bpsio.parse("/tmp/%s/result.xml" % blast_id, "blast-xml"):
-        for h in q:
-            for hsp in h:
-                g = list(Globin.objects.filter(Globin.aln_id == hsp.hit_id))[0]
-                res = serialize_search_globin(g)
-                res["identity"] = identity(hsp)
-                res["coverage"] = coverage(q, hsp)
-                res["alignment"] = {
-                    hsp.query_id + " " + str(hsp.query_start) + ":" + str(hsp.query_end): str(hsp.aln[0].seq),
-                    hsp.hit_id + " " + str(hsp.hit_start) + ":" + str(hsp.hit_end): str(hsp.aln[1].seq),
-                }
-                result.append(res)
-
-    return {"globins": result}
+        return {"globins": result}
 
 
-def upload():
+
+
+
+def upload(request):
     if request.method != "POST":
         return HttpResponseNotFound("upload")
     postdata = json.loads(request.body.read())
@@ -538,6 +541,7 @@ def addData(request):
 
             return {"error": "error processing the contribution"}
 
+
 # @post("/login")
 # def login():
 #     credentials = json.loads(request.body.read())
@@ -585,3 +589,55 @@ def addData(request):
 #         user = User.create(**credentials)
 #         credentials["id"] = user.id
 #         return credentials
+
+
+from django.shortcuts import redirect, reverse
+from django.shortcuts import render
+
+
+def about(request):
+    return render(request, 'pages/about.html', {})
+
+
+def downloads(request):
+    return render(request, 'pages/downloads.html', {})
+
+
+def methodology(request):
+    return render(request, 'pages/methodology.html', {})
+
+
+def tutorial(request):
+    return render(request, 'pages/tutorial.html', {})
+
+
+def statistics(request):
+    globin_groups = ["N", "O", "P", "Q"]
+
+    sites = {
+        "sa": ["B10", "CD1", "E7", "E11", "G8"],
+        "lt": ["B2", "E11", "E15", "G8", "H5", "H9"],
+        "e7": ["B10", "CD1", "E7", "E11"],
+        "g8": ["G8", "G9", "H9"]
+    }
+
+    site_codes = {"lt": "LT", "e7": "E7G", "g8": "STG8", "sa": "AS"}
+    site_names = {"lt": 'Long tunnel', "e7": 'Short Tunnel E7 myoglobin-like gate', "g8": 'Short Tunnel G8',
+                  "sa": 'Active site'};
+
+    # group,site,site_name,sites
+
+    groups = []
+    for g in globin_groups:
+        for site_code, positions in sites.items():
+            groups.append([g, site_code, site_codes[site_code], site_names[site_code], positions])
+
+    return render(request, 'pages/statistics.html', {"groups": groups})
+
+
+def clan(request):
+    return render(request, 'pages/clan.html', {"clan": ""})
+
+
+def home(request):
+    return render(request, 'pages/home.html', {"clan": ""})

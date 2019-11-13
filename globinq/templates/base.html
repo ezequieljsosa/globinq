@@ -15,19 +15,22 @@
 
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
 
+    <script src="{% static 'webpack/bundle.js' %}"></script>
+
     {% block css %}
-    
+
     <!-- Latest compiled and minified Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    
+{#    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">#}
+{##}
 
     <!-- Your stuff: Third-party CSS libraries go here -->
-    
+
     <!-- This file stores project-specific CSS -->
-    
+
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
-    
-    
+
+{#      <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>#}
+
     {% endblock %}
 
   </head>
@@ -35,31 +38,78 @@
   <body>
 
     <div class="mb-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
+      <nav class="navbar navbar-expand-md navbar-dark bg-dark">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="{% url 'home' %}">globinq</a>
+        <h1><a class="navbar-brand" href="{% url 'globinq:home' %}">GlobinQ</a></h1>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
+
+
+
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
+              <a class="nav-link" href="{% url 'globinq:home' %}">Search <span class="sr-only">(current)</span></a>
             </li>
+
+            {% if request.user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "Upload My Globin" %}</a>
+            </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'account_login' %}">{% trans "Upload" %}</a>
+              </li>
+            {% endif %}
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'globinq:tutorial' %}">Tutorials</a>
+            </li>
+
+            <li class="dropdown familiesbtn">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
+                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Families
+              </a>
+              <div class="dropdown-menu families-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="{% url 'globinq:clan' %}">T globins</a>
+                <a class="dropdown-item" href="{% url 'globinq:home' %}">M globins</a>
+                <a class="dropdown-item" href="{% url 'globinq:home' %}">S globins</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'globinq:statistics' %}">AA distributions</a>
+              </div>
+            </li>
+
+
+
+
+
+            <li class="dropdown aboutbtn">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2"
+                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                About
+              </a>
+              <div class="dropdown-menu aboutmenu" aria-labelledby="navbarDropdown2">
+                <a class="dropdown-item" href="{% url 'globinq:methodology' %}">Methodology</a>
+                <a class="dropdown-item" href="{% url 'globinq:downloads' %}">Downloads</a>
+                <a class="dropdown-item" href="{% url 'globinq:about' %}">Our Team</a>
+              </div>
+            </li>
+
+
             {% if request.user.is_authenticated %}
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a>
+                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "My Data" %}</a>
               </li>
+
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
                 <a class="nav-link" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
               </li>
             {% else %}
-              <li class="nav-item">
+              <li style="display: none;" class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
                 <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
               </li>
@@ -67,6 +117,9 @@
                 {# URL provided by django-allauth/account/urls.py #}
                 <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
               </li>
+
+
+
             {% endif %}
           </ul>
         </div>
@@ -83,7 +136,7 @@
       {% endif %}
 
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
+        <p>Complete...</p>
       {% endblock content %}
 
     </div> <!-- /container -->
@@ -94,21 +147,21 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     {% block javascript %}
-      
+
       <!-- Bootstrap JS and its dependencies-->
-      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+{#      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>#}
+{#      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>#}
+{#      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>#}
 
       <!-- Your stuff: Third-party javascript libraries go here -->
-      
+
 
       <!-- place project specific Javascript in this file -->
-      
+
       <script src="{% static 'js/project.js' %}"></script>
-      
+
 
     {% endblock javascript %}
   </body>
 </html>
- 
+
