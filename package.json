@@ -5,7 +5,7 @@
     "build": "webpack --config webpack.config.js"
   },
   "dependencies": {
-    "jquery": "^3.3",
+    "jquery": "^3.5",
     "biojs-io-fasta": "^0.1.17",
     "bootstrap": "^4.1",
     "bootstrap-tour": "^0.12.0",
