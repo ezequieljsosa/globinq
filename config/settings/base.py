@@ -75,9 +75,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "django_celery_beat",
     'corsheaders',
-    # 'npm_mjs',
-    # 'django_node_assets',
-    # 'django-npm',
+
 ]
 
 LOCAL_APPS = [
@@ -161,9 +159,7 @@ STATICFILES_DIRS = [str(APPS_DIR.path("static")),
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "npm.finders.NpmFinder"
-    # 'django_node_assets.finders.NodeModulesFinder',
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder"
 ]
 
 # MEDIA
@@ -312,15 +308,3 @@ CORS_ORIGIN_WHITELIST = (
 CORS_ORIGIN_REGEX_WHITELIST = (
     'http://localhost:3000/*',
 )
-# NODE_PACKAGE_JSON = str(ROOT_DIR) + '/package2.json'
-# NODE_MODULES_ROOT = str(ROOT_DIR) + '/node_modules'
-# NODE_PACKAGE_MANAGER_EXECUTABLE = '/home/eze/.nvm/versions/node/v8.9.4/bin/npm'
-
-
-NPM_ROOT_PATH=str(ROOT_DIR)
-
-# NPM_EXECUTABLE_PATH=
-
-NPM_STATIC_FILES_PREFIX=STATIC_ROOT + "/transpiled2"
-
-# NPM_FILE_PATTERNS: (optional) By default, django-npm will expose all files in node_modules to Django as staticfiles. You may not want all of the

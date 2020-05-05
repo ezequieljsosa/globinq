@@ -16,29 +16,63 @@ from Bio.PDB.parse_pdb_header import parse_pdb_header
 from tqdm import tqdm
 
 from globinq import reduced_code, sites, site_pos
-from globinq.models import Tax, Globin, Channel, PDB, GlobinPosition, \
+from globinq.models import Tax, Globin, Channel, PDB, GlobinPosition, GlobinDomain, \
     IndexKeyword, GlobinPDBPosition, ExperimentalData, PosInsertion, User, Contribution
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 
+def globinName(tax_name,trHb_group):
+    orgCod = ""
+    vec = tax_name.split()
+    if "sp" in map(lambda x: x.lower(), vec):
+        vec2 = vec[0:map(lambda x: x.lower(), vec).index("sp")]
+        if len(vec2) > 1:
+            orgCod = "".join([vec2[0][0].upper()] + [y.lower() for y in vec2[1:]] + ["-"])
+    elif "by" in map(lambda x: x.lower(), vec):
+        vec2 = vec[0:map(lambda x: x.lower(), vec).index("by")]
+        if len(vec2) > 1:
+            orgCod = "".join([vec2[0][0].upper()] + [y.lower() for y in vec2[1:]] + ["-"])
+    else:
+        for i, word in enumerate(vec, 1):
+            if len([x for x in word if x == x.upper()]) > 2:
+                break
+        if i > 1:
+            vec2 = vec[0:i]
+            # orgCod = "".join([vec2[0][0].upper()] + [ y[0].lower() for y in vec2[1:] ] + ["-"])
+            orgCod = "".join([vec2[0][0].upper(), vec2[1][0].lower(), "-"])
+
+    return orgCod + "trHb" + trHb_group
+
 
 
 class Command(BaseCommand):
 
+    help = 'Loads data from 10.1371/journal.pcbi.1004701'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--pdbs_path',  default="/data/pdb/divided")
+        parser.add_argument('--pdb_blast',   default='data/generated/blast_pdb.tbl')
+
     def handle(self, *args, **options):
+        pdbs_path = options['pdbs_path']
+        pdb_blast = options['pdb_blast']
+
+        assert os.path.exists(pdbs_path), f"{pdbs_path} does not exists"
+        assert os.path.exists(pdb_blast), f"{pdb_blast} does not exists"
 
         from django.db import connection
 
 
         for x in reversed(
-                [Contribution,Channel, User, Globin, ExperimentalData, PDB, GlobinPosition, IndexKeyword, GlobinPDBPosition, PosInsertion]):
+                [Contribution,Channel, User, Globin, ExperimentalData, PDB, GlobinPosition,
+                 IndexKeyword, GlobinPDBPosition, PosInsertion]):
             cursor = connection.cursor()
             cursor.execute("SET FOREIGN_KEY_CHECKS = 0; TRUNCATE TABLE `" + x._meta.db_table + "`;SET FOREIGN_KEY_CHECKS = 1;")
 
 
-        pdbl = PDBList(pdb="/data/databases/pdb/divided/")
+        pdbl = PDBList(pdb=pdbs_path)
 
         e7g_residues = pd.read_csv("data/e7g_residues.csv")
         e7g_residues["tax"] = map(lambda x: [y.split("(")[0].strip() for y in
@@ -105,7 +139,7 @@ class Command(BaseCommand):
                 tax, pp50, koff, kon = line.split("+")
                 p50[tax] = {"p50": float(pp50), "kon": float(kon), "koff": float(koff)}
 
-        df = pd.read_table("data/generated/blast_pdb.tbl", sep="\t",
+        df = pd.read_table(pdb_blast, sep="\t",
                            names=["query", "hit", "identity", "4", "5", "6", "7", "8", "9", "10", "11"],
                            index_col=False)
         df = df[df.identity > 95]
@@ -151,8 +185,9 @@ class Command(BaseCommand):
             g.tax = Tax.objects.filter(id=tax[:-1]).get()
             globin_group = group[tax] if tax in group else "?"
 
-            g.globin_group = globin_group
-            g.name = g.globinName()
+            g.group = globin_group
+            g.name = globinName(g.tax.name,globin_group)
+            g.family = "T"
 
             if tax in tax_unip:
                 uniprot = tax_unip[tax]
@@ -161,86 +196,83 @@ class Command(BaseCommand):
             else:
                 self.stderr.write(tax + " sin uniprot ")
 
-            active_site = [(tax_cepa[str(tax)] in x) for x in active_site_res.tax]
+            domain = GlobinDomain(globin=g,start=0,end=len(g.sequence)-1)
 
-            # print("**************************")
-            # print(active_site_res)
-            # print("**************************")
-            # print(active_site)
-            # print("**************************")
+            active_site = [(tax_cepa[str(tax)] in x) for x in active_site_res.tax]
 
             active_site = active_site_res[active_site]
             if not active_site.empty:
                 if len(active_site) == 1:
-                    g.active_site = active_site.iloc[0].residues
+                    domain.active_site = active_site.iloc[0].residues
                 else:
                     pass
                     # print tax  + " sin active site"
 
-            g.l_channel = Channel()
-            g.g8_channel = Channel()
-            g.e7_portal = Channel()
+            # g.l_channel = Channel()
+            # g.g8_channel = Channel()
+            # g.e7_portal = Channel()
 
             g.aln_id = tax
             if tax in msa:
                 seq = msa[tax].seq
                 g.sequence = str(seq.ungap("-"))
+                domain.sequence = g.sequence
                 seq = str(seq)
-                g.aln_seq = str(seq)
+                domain.aln_seq = str(seq)
 
                 site = "lt"
-                g.l_channel.sequence = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
-                g.l_channel.sequence_red = "".join(
+                channel = Channel(name=site,domain=domain)
+                channel.sequence = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
+                channel.sequence_red = "".join(
                     [reduced_code(site, pos, str(seq[site_pos[pos]])) for pos in sites[site]])
                 if uniprot in unip_lt_dict:
                     #                 assert g.l_channel.sequence_red == unip_lt_dict[uniprot]["residues"]
-                    g.l_channel.e_bar_contrib = float(unip_lt_dict[uniprot]["k"].replace(",", ".").lower())
+                    channel.e_bar_contrib = float(unip_lt_dict[uniprot]["k"].replace(",", ".").lower())
+                channel.save()
+                if tax in openness_dic:
+                    channel.openness = float(openness_dic[tax]["%LT"])
+
 
                 site = "g8"
-                g.g8_channel.sequence = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
-                g.g8_channel.sequence_red = "".join(
+                channel = Channel(name=site,domain=domain)
+                channel.sequence = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
+                channel.sequence_red = "".join(
                     [reduced_code(site, pos, str(seq[site_pos[pos]])) for pos in sites[site]])
                 if uniprot in unip_stg8_dict:
                     #                 assert g.g8_channel.sequence_red == unip_stg8_dict[uniprot]["residues"]
-                    g.g8_channel.e_bar_contrib = float(unip_stg8_dict[uniprot]["k"].replace(",", ".").lower())
+                    channel.e_bar_contrib = float(unip_stg8_dict[uniprot]["k"].replace(",", ".").lower())
+                channel.save()
+                if tax in openness_dic:
+                    channel.openness = float(openness_dic[tax]["%STG8"])
+
 
                 site = "e7"
-                g.e7_portal.sequence = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
-                g.e7_portal.sequence_red = "".join(
+                channel = Channel(name=site,domain=domain)
+                channel.sequence = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
+                channel.sequence_red = "".join(
                     [reduced_code(site, pos, str(seq[site_pos[pos]])) for pos in sites[site]])
                 if uniprot in unip_e7g_dict:
                     #                 assert g.e7_portal.sequence_red == unip_e7g_dict[uniprot]["residues"]
-                    g.e7_portal.e_bar_contrib = float(unip_e7g_dict[uniprot]["k"].replace(",", ".").lower())
+                    channel.e_bar_contrib = float(unip_e7g_dict[uniprot]["k"].replace(",", ".").lower())
+                channel.save()
+                if tax in openness_dic:
+                    channel.openness = float(openness_dic[tax]["%E7"])
 
-                site = "sa"
-                g.active_site = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
-                g.active_site_red = "".join([reduced_code(site, pos, str(seq[site_pos[pos]])) for pos in sites[site]])
-            #             if uniprot in unip_as_dict:
-            #                 assert g.l_channel.sequence_red == unip_as_dict[uniprot]["residues"]
-            else:
+                domain.active_site = "".join([str(seq[site_pos[pos]]) for pos in sites[site]])
+                domain.active_site_red = "".join([reduced_code(site, pos, str(seq[site_pos[pos]])) for pos in sites[site]])
 
-                g.l_channel = Channel(sequence="?????", sequence_red="?????")
-                g.g8_channel = Channel(sequence="?????", sequence_red="?????")
-                g.e7_portal = Channel(sequence="?????", sequence_red="?????")
-                g.active_site = "????????"
-                g.active_site_red = "????????"
-
-            if tax in openness_dic:
-                g.l_channel.openness = float(openness_dic[tax]["%LT"])
-                g.g8_channel.openness = float(openness_dic[tax]["%STG8"])
-                g.e7_portal.openness = float(openness_dic[tax]["%E7"])
 
             if tax in p50:
-                g.p50 = float(p50[tax]["p50"])
-                g.k_on_o2_pred = float(p50[tax]["kon"])
-                g.k_off_o2_pred = float(p50[tax]["koff"])
+                domain.p50 = float(p50[tax]["p50"])
+                domain.k_on_o2_pred = float(p50[tax]["kon"])
+                domain.k_off_o2_pred = float(p50[tax]["koff"])
 
             g.save(force_insert=True)
+            domain.save(force_insert=True)
 
             if (tax in kon_exp) or (tax in koff_exp):
                 all_exp_data = set((kon_exp[tax].keys() if tax in kon_exp else [] +
-                                                                               koff_exp[
-                                                                                   tax].keys() if tax in koff_exp else []))
+                        koff_exp[tax].keys() if tax in koff_exp else []))
 
                 for exp_data in all_exp_data:
                     exp = ExperimentalData(sequence_red=exp_data, globin=g)
@@ -262,7 +294,7 @@ class Command(BaseCommand):
                     if pdb.cod not in rows:
                         rows[pdb.cod] = pdb
                 for pdb in rows.values():
-                    pdb_path = "/data/databases/pdb/divided/" + pdb.cod[1:3] + "/pdb" + pdb.cod + ".ent"
+                    pdb_path = pdbs_path + pdb.cod[1:3] + "/pdb" + pdb.cod + ".ent"
                     if not os.path.exists(pdb_path):
                         downloaded = pdbl.retrieve_pdb_file(pdb.cod, file_format="pdb")
                         shutil.move(downloaded, pdb_path)

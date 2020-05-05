@@ -20,7 +20,8 @@
     "rc-checkbox": "^1.4.3",
     "rc-slider": "^7.0.6",
     "sbgglmol": "file:./sbgglmol/",
-    "sequence-viewer": "^0.2.18"
+    "sequence-viewer": "^0.2.18",
+    "popper.js": "^1.14.1"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.1",

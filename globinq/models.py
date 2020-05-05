@@ -8,13 +8,15 @@ from django.utils.timezone import make_aware
 
 from globinq.users.models import User
 
-
+def default_timestamp():
+    return make_aware(datetime.datetime.now())
 
 
 class Tax(models.Model):
     id = models.IntegerField(primary_key=True)
     parent = models.ForeignKey('Tax', related_name='children', null=True, default=None, on_delete=models.PROTECT)
-    name = models.TextField()
+    name = models.TextField(null=True)
+    names = models.TextField(null=True)
     rank = models.TextField()
     with_globin = models.BooleanField(default=False)
 
@@ -26,40 +28,29 @@ class Tax(models.Model):
             return [tax.id]
 
 
-class Channel(models.Model):
-    sequence = models.TextField()
-    sequence_red = models.TextField()
-    openness = models.FloatField(null=True)
-    e_bar_contrib = models.FloatField(null=True)  # % Energetic barrier contribution
 
-    def hasExperimental(self):
-        return bool(self.openness)  # or bool(self.e_bar_contrib)
 
 
 class Globin(models.Model):
     tax = models.ForeignKey(Tax, related_name='globins', on_delete=models.PROTECT)
-    owner = models.ForeignKey(User, related_name='globins', null=True, on_delete=models.CASCADE)
-    uniprot = models.TextField(null=True)
-    name = models.TextField()
-    globin_group = models.TextField()
+    uniprot = models.CharField(max_length=20)
+    name = models.CharField(max_length=100)
+
+    group = models.CharField(max_length=10)
+    family = models.CharField(max_length=10)
     sequence = models.TextField(default="")
 
-    aln_id = models.TextField(null=True)
-    aln_seq = models.TextField(null=True)
+    # l_channel = models.ForeignKey(Channel,related_name="l_channel", null=True, on_delete=models.CASCADE)  # ,backref="lch_set"
+    # g8_channel = models.ForeignKey(Channel,related_name="g8_channel",null=True, on_delete=models.CASCADE)  # ,backref="g8_set"
+    # e7_portal = models.ForeignKey(Channel,related_name="e7_portal",null=True, on_delete=models.CASCADE)  # ,backref="e7_set"
 
-    l_channel = models.ForeignKey(Channel,related_name="l_channel", null=True, on_delete=models.CASCADE)  # ,backref="lch_set"
-    g8_channel = models.ForeignKey(Channel,related_name="g8_channel",null=True, on_delete=models.CASCADE)  # ,backref="g8_set"
-    e7_portal = models.ForeignKey(Channel,related_name="e7_portal",null=True, on_delete=models.CASCADE)  # ,backref="e7_set"
-    active_site = models.TextField()
-    active_site_red = models.TextField()
 
-    timestamp = models.DateTimeField(default=lambda : make_aware(datetime.datetime.now()))
+    owner = models.ForeignKey(User, related_name='globins', null=True, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=default_timestamp)
     closest_curated = models.ForeignKey('self', related_name='non_curated', null=True, default=None,
                                         on_delete=models.CASCADE)
 
-    p50 = models.FloatField(null=True)
-    k_on_o2_pred = models.FloatField(null=True)
-    k_off_o2_pred = models.FloatField(null=True)
+
     removed = models.BooleanField(default=False)
 
     def hasExperimental(self):
@@ -70,27 +61,7 @@ class Globin(models.Model):
 
         return (bool(self.k_on_o2_pred) or bool(self.k_off_o2_pred))
 
-    def globinName(self):
-        orgCod = ""
-        vec = self.tax.name.split()
-        if "sp" in map(lambda x: x.lower(), vec):
-            vec2 = vec[0:map(lambda x: x.lower(), vec).index("sp")]
-            if len(vec2) > 1:
-                orgCod = "".join([vec2[0][0].upper()] + [y.lower() for y in vec2[1:]] + ["-"])
-        elif "by" in map(lambda x: x.lower(), vec):
-            vec2 = vec[0:map(lambda x: x.lower(), vec).index("by")]
-            if len(vec2) > 1:
-                orgCod = "".join([vec2[0][0].upper()] + [y.lower() for y in vec2[1:]] + ["-"])
-        else:
-            for i, word in enumerate(vec, 1):
-                if len([x for x in word if x == x.upper()]) > 2:
-                    break
-            if i > 1:
-                vec2 = vec[0:i]
-                # orgCod = "".join([vec2[0][0].upper()] + [ y[0].lower() for y in vec2[1:] ] + ["-"])
-                orgCod = "".join([vec2[0][0].upper(), vec2[1][0].lower(), "-"])
 
-        return orgCod + "trHb" + self.globin_group
 
     def exp_txt(self):
         txt = ""
@@ -128,9 +99,38 @@ class Globin(models.Model):
         me = super(Globin, self).save(*args, **kwargs)
         return me
 
+class GlobinDomain(models.Model):
+    sequence = models.TextField()
+    start = models.IntegerField()
+    end = models.IntegerField()
+    globin = models.ForeignKey(Globin, related_name="domains", on_delete=models.CASCADE)
+    internal_code = models.TextField()
+
+    sequence_red = models.TextField(default="")
+
+    aln_id = models.CharField(max_length=100)
+    aln_seq = models.TextField(null=True)
+
+    active_site = models.TextField()
+    active_site_red = models.TextField()
+
+    p50 = models.FloatField(null=True)
+    k_on_o2_pred = models.FloatField(null=True)
+    k_off_o2_pred = models.FloatField(null=True)
+
+class Channel(models.Model):
+    domain = models.ForeignKey(GlobinDomain, related_name="channels", on_delete=models.CASCADE)
+    name = models.CharField(max_length=30)
+    sequence = models.TextField()
+    sequence_red = models.TextField()
+    openness = models.FloatField(null=True)
+    e_bar_contrib = models.FloatField(null=True)  # % Energetic barrier contribution
+
+    def hasExperimental(self):
+        return bool(self.openness)  # or bool(self.e_bar_contrib)
 
 class ExperimentalData(models.Model):
-    sequence_red = models.TextField()
+    ctype = models.TextField(choices=[("exp", "exp"), ("pdb", "pdb")])
     k_on_o2_exp = models.FloatField()
     k_off_o2_exp = models.FloatField(null=True)
     globin = models.ForeignKey(Globin, related_name="experimental", on_delete=models.CASCADE)
@@ -168,7 +168,7 @@ class GlobinPosition(models.Model):
     globin = models.ForeignKey(Globin, related_name='positions', on_delete=models.CASCADE)
     seq_pos = models.IntegerField()
 
-    g_position = models.TextField()
+    g_position = models.CharField(max_length=10)
 
 
 class GlobinPDBPosition(models.Model):
